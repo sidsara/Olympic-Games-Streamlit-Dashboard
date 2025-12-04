@@ -1,0 +1,8 @@
+continent,Gold Medal,Silver Medal,Bronze Medal,Total,num_countries,gold_ratio,avg_medals_per_country
+Europe,123,141,170,434,33,0.283,13.15
+Asia,97,70,88,255,22,0.38,11.59
+North America,56,60,70,186,12,0.301,15.5
+Oceania,28,27,19,74,3,0.378,24.67
+Africa,13,12,14,39,12,0.333,3.25
+South America,6,14,15,35,6,0.171,5.83
+Unknown,6,6,8,20,4,0.3,5.0

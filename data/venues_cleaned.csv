@@ -1,0 +1,36 @@
+venue,sports,date_start,date_end,tag,url,duration_days,latitude,longitude
+Aquatics Centre,"['Artistic Swimming', 'Diving', 'Water Polo']",2024-07-27 09:00:00+00:00,2024-08-10 20:00:00+00:00,aquatics-centre,https://olympics.com/en/paris-2024/venues/aquatics-centre,14.0,48.9279,2.3619
+Bercy Arena,"['Artistic Gymnastics', 'Basketball', 'Trampoline']",2024-07-27 09:00:00+00:00,2024-08-11 16:00:00+00:00,bercy-arena,https://olympics.com/en/paris-2024/venues/bercy-arena,15.0,48.8394,2.3791
+Bordeaux Stadium,['Football'],2024-07-25 17:00:00+00:00,2024-08-02 21:59:00+00:00,bordeaux-stadium,https://olympics.com/en/paris-2024/venues/bordeaux-stadium,8.0,48.8566,2.3522
+Champ de Mars Arena,"['Judo', 'Wrestling']",2024-07-27 08:00:00+00:00,2024-08-11 12:00:00+00:00,champ-de-mars-arena,https://olympics.com/en/paris-2024/venues/champ-de-mars-arena,15.0,48.8556,2.2986
+Château de Versailles,"['Equestrian', 'Modern Pentathlon']",2024-07-27 07:30:00+00:00,2024-08-11 11:30:00+00:00,chateau-de-versailles,https://olympics.com/en/paris-2024/venues/chateau-de-versailles,15.0,48.8049,2.1204
+Chateauroux Shooting Centre,['Shooting'],2024-07-27 07:00:00+00:00,2024-08-05 14:35:00+00:00,chateauroux-shooting-centre,https://olympics.com/en/paris-2024/venues/chateauroux-shooting-centre,9.0,48.8566,2.3522
+Eiffel Tower Stadium,['Beach Volleyball'],2024-07-27 12:00:00+00:00,2024-08-10 21:59:00+00:00,eiffel-tower-stadium,https://olympics.com/en/paris-2024/venues/eiffel-tower-stadium,14.0,48.8584,2.2945
+Elancourt Hill,['Cycling Mountain Bike'],2024-07-28 12:00:00+00:00,2024-07-29 14:30:00+00:00,elancourt-hill,https://olympics.com/en/paris-2024/venues/elancourt-hill,1.0,48.8566,2.3522
+Geoffroy-Guichard Stadium,['Football'],2024-07-25 13:00:00+00:00,2024-07-31 19:00:00+00:00,geoffroy-guichard-stadium,https://olympics.com/en/paris-2024/venues/geoffroy-guichard-stadium,6.0,48.8566,2.3522
+Grand Palais,"['Fencing', 'Taekwondo']",2024-07-27 08:00:00+00:00,2024-08-10 21:00:00+00:00,grand-palais,https://olympics.com/en/paris-2024/venues/grand-palais,14.0,48.8662,2.3124
+Hôtel de Ville,['Athletics'],2024-08-10 06:00:00+00:00,2024-08-11 09:15:00+00:00,hotel-de-ville,https://olympics.com/en/paris-2024/venues/hotel-de-ville,1.0,48.8566,2.3522
+Invalides,"['Archery', 'Athletics', 'Cycling Road']",2024-07-25 07:30:00+00:00,2024-08-04 13:20:00+00:00,invalides,https://olympics.com/en/paris-2024/venues/invalides,10.0,48.8566,2.3122
+La Beaujoire Stadium,['Football'],2024-07-25 15:00:00+00:00,2024-08-08 18:00:00+00:00,la-beaujoire-stadium,https://olympics.com/en/paris-2024/venues/la-beaujoire-stadium,14.0,48.8566,2.3522
+La Concorde,"['3x3 Basketball', 'Breaking', 'Cycling BMX Freestyle', 'Skateboarding']",2024-07-27 10:00:00+00:00,2024-08-10 20:00:00+00:00,la-concorde,https://olympics.com/en/paris-2024/venues/la-concorde,14.0,48.8656,2.3212
+Le Bourget Sport Climbing Venue,['Sport Climbing'],2024-08-05 08:00:00+00:00,2024-08-10 11:20:00+00:00,le-bourget-climbing-venue,https://olympics.com/en/paris-2024/venues/le-bourget-climbing-venue,5.0,48.8566,2.3522
+Golf National,['Golf'],2024-08-01 07:00:00+00:00,2024-08-10 16:30:00+00:00,le-golf-national,https://olympics.com/en/paris-2024/venues/le-golf-national,9.0,48.8566,2.3522
+Lyon Stadium,['Football'],2024-07-25 17:00:00+00:00,2024-08-09 16:00:00+00:00,lyon-stadium,https://olympics.com/en/paris-2024/venues/lyon-stadium,14.0,48.8566,2.3522
+Marseille Marina,['Sailing'],2024-07-28 09:00:00+00:00,2024-08-08 17:00:00+00:00,marseille-marina,https://olympics.com/en/paris-2024/venues/marseille-marina,11.0,48.8566,2.3522
+Marseille Stadium,['Football'],2024-07-25 19:00:00+00:00,2024-08-06 21:59:00+00:00,marseille-stadium,https://olympics.com/en/paris-2024/venues/marseille-stadium,12.0,48.8566,2.3522
+Nice Stadium,['Football'],2024-07-25 15:00:00+00:00,2024-08-31 21:00:00+00:00,nice-stadium,https://olympics.com/en/paris-2024/venues/nice-stadium,37.0,48.8566,2.3522
+North Paris Arena,"['Boxing', 'Modern Pentathlon']",2024-07-27 13:30:00+00:00,2024-08-08 15:30:00+00:00,north-paris-arena,https://olympics.com/en/paris-2024/venues/north-paris-arena,12.0,48.9342,2.3601
+Parc des Princes,['Football'],2024-07-25 13:00:00+00:00,2024-08-10 18:30:00+00:00,parc-des-princes,https://olympics.com/en/paris-2024/venues/parc-des-princes,16.0,48.8415,2.253
+Paris La Defense Arena,"['Swimming', 'Water Polo']",2024-07-27 09:00:00+00:00,2024-08-11 13:50:00+00:00,paris-la-defense-arena,https://olympics.com/en/paris-2024/venues/paris-la-defense-arena,15.0,48.8566,2.3522
+Pierre Mauroy Stadium,"['Basketball', 'Handball']",2024-07-27 09:00:00+00:00,2024-08-11 14:00:00+00:00,pierre-mauroy-stadium,https://olympics.com/en/paris-2024/venues/pierre-mauroy-stadium,15.0,48.8566,2.3522
+Pont Alexandre III,"['Cycling Road', 'Marathon Swimming', 'Triathlon']",2024-07-30 06:00:00+00:00,2024-08-09 08:30:00+00:00,pont-alexandre-iii,https://olympics.com/en/paris-2024/venues/pont-alexandre-iii,10.0,48.8638,2.3135
+Porte de La Chapelle Arena,"['Badminton', 'Rhythmic Gymnastics']",2024-07-27 06:30:00+00:00,2024-08-10 13:45:00+00:00,porte-de-la-chapelle-arena,https://olympics.com/en/paris-2024/venues/porte-de-la-chapelle-arena,14.0,48.8985,2.3595
+Stade Roland-Garros,"['Boxing', 'Tennis']",2024-07-27 10:00:00+00:00,2024-08-10 21:30:00+00:00,roland-garros-stadium,https://olympics.com/en/paris-2024/venues/roland-garros-stadium,14.0,48.8566,2.3522
+Saint-Quentin-en-Yvelines BMX Stadium,['Cycling BMX Racing'],2024-08-01 18:00:00+00:00,2024-08-02 20:30:00+00:00,saint-quentin-en-yvelines-bmx-stadium,https://olympics.com/en/paris-2024/venues/saint-quentin-en-yvelines-bmx-stadium,1.0,48.8566,2.3522
+Saint-Quentin-en-Yvelines Velodrome,['Cycling Track '],2024-08-05 15:00:00+00:00,2024-08-11 12:40:00+00:00,saint-quentin-en-yvelines-velodrome,https://olympics.com/en/paris-2024/venues/saint-quentin-en-yvelines-velodrome,5.0,48.8566,2.3522
+South Paris Arena,"['Handball', 'Table Tennis', 'Volleyball', 'Weightlifting']",2024-07-25 07:00:00+00:00,2024-08-11 13:45:00+00:00,south-paris-arena,https://olympics.com/en/paris-2024/venues/south-paris-arena,17.0,48.8211,2.3658
+Stade de France,"['Athletics', 'Rugby Sevens']",2024-07-24 13:30:00+00:00,2024-08-10 20:30:00+00:00,stade-de-france,https://olympics.com/en/paris-2024/venues/stade-de-france,17.0,48.9244,2.3601
+"Teahupo'o, Tahiti",['Surfing'],2024-07-27 17:00:00+00:00,2024-07-31 03:15:00+00:00,teahupo-o-tahiti,https://olympics.com/en/paris-2024/venues/teahupo-o-tahiti,3.0,48.8566,2.3522
+Trocadéro,"['Athletics', 'Cycling Road']",2024-08-01 05:30:00+00:00,2024-08-07 08:50:00+00:00,trocadero,https://olympics.com/en/paris-2024/venues/trocadero,6.0,48.862,2.2876
+Vaires-sur-Marne Nautical Stadium,"['Canoe Slalom', 'Canoe Sprint', 'Rowing']",,,vaires-sur-marne-nautical-stadium,https://olympics.com/en/paris-2024/venues/vaires-sur-marne-nautical-stadium,,48.8566,2.3522
+Yves-du-Manoir Stadium,['Hockey'],2024-07-27 08:00:00+00:00,2024-08-09 20:30:00+00:00,yves-du-manoir-stadium,https://olympics.com/en/paris-2024/venues/yves-du-manoir-stadium,13.0,48.8566,2.3522
