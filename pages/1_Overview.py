@@ -126,9 +126,6 @@ st.sidebar.info("💡 **Tip:** Use filters to explore specific countries, contin
 # ============================================================================
 # APPLY FILTERS
 # ============================================================================
-# ============================================================================
-# APPLY FILTERS
-# ============================================================================
 def apply_filters(df, filter_type='medals_total'):
     """Apply global filters to dataframe"""
     filtered_df = df.copy()
@@ -153,21 +150,41 @@ def apply_filters(df, filter_type='medals_total'):
             filtered_df = filtered_df[filtered_df['country_code'].isin(continent_codes)]
     
     # Apply sport filter
-    if selected_sports and filter_type in ['events', 'medals']:
-        if 'sport' in filtered_df.columns:
-            filtered_df = filtered_df[filtered_df['sport'].isin(selected_sports)]
-        elif 'discipline' in filtered_df.columns:
-            filtered_df = filtered_df[filtered_df['discipline'].isin(selected_sports)]
+    if selected_sports:
+        if filter_type == 'athletes':
+            # Pour les athletes, la colonne 'disciplines' est une liste (string representation)
+            # Ex: "['Wrestling']" ou "['Swimming', 'Diving']"
+            def athlete_has_sport(disciplines_str):
+                if pd.isna(disciplines_str):
+                    return False
+                # Nettoyer la string et extraire les sports
+                # disciplines_str est du genre: "['Wrestling']"
+                try:
+                    # Enlever les crochets et guillemets, split par virgule
+                    sports_list = disciplines_str.strip("[]").replace("'", "").replace('"', '').split(',')
+                    sports_list = [s.strip() for s in sports_list]
+                    # Vérifier si un des sports sélectionnés est dans la liste
+                    return any(sport in sports_list for sport in selected_sports)
+                except:
+                    return False
+            
+            filtered_df = filtered_df[filtered_df['disciplines'].apply(athlete_has_sport)]
+        
+        elif filter_type in ['events', 'medals']:
+            if 'sport' in filtered_df.columns:
+                filtered_df = filtered_df[filtered_df['sport'].isin(selected_sports)]
+            elif 'discipline' in filtered_df.columns:
+                filtered_df = filtered_df[filtered_df['discipline'].isin(selected_sports)]
     
     # Apply medal type filters
     if filter_type == 'medals' and 'medal_type' in filtered_df.columns:
         medal_types = []
         if show_gold:
-            medal_types.append('Gold Medal')  # Correction ici !
+            medal_types.append('Gold Medal')
         if show_silver:
-            medal_types.append('Silver Medal')  # Correction ici !
+            medal_types.append('Silver Medal')
         if show_bronze:
-            medal_types.append('Bronze Medal')  # Correction ici !
+            medal_types.append('Bronze Medal')
         
         if medal_types:
             filtered_df = filtered_df[filtered_df['medal_type'].isin(medal_types)]
@@ -255,12 +272,6 @@ def get_filtered_medals_total():
     medal_pivot = medal_pivot.sort_values('Total', ascending=False)
     
     return medal_pivot
-
-
-# Remplacer cette ligne:
-# filtered_medals_total = apply_filters(data['medals_total'], 'medals_total')
-
-# Par:
 
 
 # Apply filters to datasets
