@@ -245,7 +245,6 @@ with search_col2:
     search_button = st.button("🔎 Search", use_container_width=True)
 
 if selected_athlete and selected_athlete != '':
-    # Utiliser le DataFrame filtré pour récupérer l'athlète
     athlete_data = filtered_athletes_for_profile[filtered_athletes_for_profile['name'] == selected_athlete].iloc[0]
     
     st.markdown("---")
@@ -254,12 +253,29 @@ if selected_athlete and selected_athlete != '':
     col1, col2, col3, col4 = st.columns([1, 2, 2, 2])
     
     with col1:
-        # Display athlete image if available
-        if 'image_url' in athlete_data and pd.notna(athlete_data['image_url']):
-            st.image(athlete_data['image_url'], width=180, caption="Official photo")
+        # Correction affichage image : forcer string et vérifier si l'URL est valide
+        image_url = str(athlete_data.get('image_url', '')).strip()
+        if image_url and image_url.startswith('http'):
+            try:
+                st.markdown(
+                    f"""
+                    <div style='margin-bottom: 20px; text-align: center;'>
+                        <img src="{image_url}" width="180" style="border-radius:10px; margin-bottom:10px;" />
+                        <div style='font-size:13px; color:gray;'>Official photo</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+            except Exception:
+                st.markdown("""
+                <div style='text-align: center; padding: 20px; background-color: #f0f2f6; border-radius: 10px; margin-bottom:20px;'>
+                    <div style='font-size: 80px;'>👤</div>
+                    <p style='font-size: 12px; color: gray;'>Image not available</p>
+                </div>
+                """, unsafe_allow_html=True)
         else:
             st.markdown("""
-            <div style='text-align: center; padding: 20px; background-color: #f0f2f6; border-radius: 10px;'>
+            <div style='text-align: center; padding: 20px; background-color: #f0f2f6; border-radius: 10px; margin-bottom:20px;'>
                 <div style='font-size: 80px;'>👤</div>
                 <p style='font-size: 12px; color: gray;'>No Image Available</p>
             </div>

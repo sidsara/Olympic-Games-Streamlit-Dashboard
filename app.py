@@ -107,9 +107,8 @@ if img_base64:
             <div class="welcome-text">
                 Plongez dans l’univers festif et sportif des Jeux Olympiques.<br>
                 Explorez les performances, les événements et l’ambiance unique de Paris.<br>
-                Utilisez le menu à gauche pour découvrir toutes les analyses et statistiques.<br><br>
-                <b>Que la fête commence ! 🏅</b>
-            </div>
+                
+            
         </div>
         """,
         unsafe_allow_html=True
