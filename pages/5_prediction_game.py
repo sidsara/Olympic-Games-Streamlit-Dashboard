@@ -9,8 +9,6 @@ Date: December 2024
 
 import streamlit as st
 import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
 from datetime import datetime
 from pathlib import Path
 import random
@@ -228,8 +226,7 @@ def calculate_stats(history):
             'correct': 0,
             'accuracy': 0,
             'streak': 0,
-            'best_streak': 0,
-            'sports_played': []
+            'best_streak': 0
         }
     
     df = pd.DataFrame(history)
@@ -261,8 +258,7 @@ def calculate_stats(history):
         'correct': correct_count,
         'accuracy': accuracy,
         'streak': current_streak,
-        'best_streak': best_streak,
-        'sports_played': df['sport'].unique().tolist()
+        'best_streak': best_streak
     }
 
 # ============================================================================
@@ -349,311 +345,112 @@ with st.sidebar:
         st.rerun()
 
 # ============================================================================
-# MAIN CONTENT TABS
+# QUIZ GAME
 # ============================================================================
 
-tab1, tab2, tab3 = st.tabs(["🎮 Quiz", "📊 Statistiques", "🏆 Historique"])
+st.markdown("### 🎯 Devinez quel pays a remporté la médaille d'or !")
 
-# ============================================================================
-# TAB 1: QUIZ GAME
-# ============================================================================
+# Générer ou récupérer la question actuelle
+if st.session_state.current_question is None:
+    st.session_state.current_question = get_new_question(df, st.session_state.difficulty)
+    st.session_state.answered = False
 
-with tab1:
-    st.markdown("### 🎯 Devinez quel pays a remporté la médaille d'or !")
+if st.session_state.current_question:
+    question = st.session_state.current_question
     
-    # Générer ou récupérer la question actuelle
-    if st.session_state.current_question is None:
-        st.session_state.current_question = get_new_question(df, st.session_state.difficulty)
-        st.session_state.answered = False
+    # Afficher la question dans une carte stylisée
+    st.markdown(f"""
+    <div class="question-card">
+        <h3>🏅 {question['sport']}</h3>
+        <p style="font-size: 1.1rem; color: #FAFAFA;"><strong>Épreuve:</strong> {question['event']}</p>
+        <p style="color: #B4B4B4;">Genre: {question['gender']} | Date: {question['medal_date']}</p>
+    </div>
+    """, unsafe_allow_html=True)
     
-    if st.session_state.current_question:
-        question = st.session_state.current_question
-        
-        # Afficher la question dans une carte stylisée
+    col1, col2 = st.columns([3, 1])
+    
+    with col2:
         st.markdown(f"""
-        <div class="question-card">
-            <h3>🏅 {question['sport']}</h3>
-            <p style="font-size: 1.1rem; color: #FAFAFA;"><strong>Épreuve:</strong> {question['event']}</p>
-            <p style="color: #B4B4B4;">Genre: {question['gender']} | Date: {question['medal_date']}</p>
+        <div class="score-card">
+            <h4>Question</h4>
+            <h2>{st.session_state.total_questions + 1}</h2>
         </div>
         """, unsafe_allow_html=True)
+    
+    # Options de réponse
+    if not st.session_state.answered:
+        st.markdown("#### 🌍 Sélectionnez le pays médaillé d'or:")
         
-        col1, col2 = st.columns([3, 1])
+        # Adapter le nombre de colonnes selon la difficulté
+        if len(question['options']) <= 3:
+            cols = st.columns(3)
+        elif len(question['options']) <= 4:
+            cols = st.columns(2)
+        else:
+            cols = st.columns(3)
         
-        with col2:
+        for idx, option in enumerate(question['options']):
+            with cols[idx % len(cols)]:
+                if st.button(
+                    f"🌍 {option}", 
+                    key=f"option_{idx}", 
+                    use_container_width=True,
+                    type="secondary"
+                ):
+                    st.session_state.answered = True
+                    st.session_state.total_questions += 1
+                    
+                    is_correct = (option == question['correct_answer'])
+                    
+                    if is_correct:
+                        st.session_state.score += 1
+                    
+                    # Enregistrer dans l'historique
+                    st.session_state.history.append({
+                        'sport': question['sport'],
+                        'event': question['event'],
+                        'your_answer': option,
+                        'correct_answer': question['correct_answer'],
+                        'correct': is_correct,
+                        'athlete': question['athlete'],
+                        'timestamp': datetime.now(),
+                        'difficulty': st.session_state.difficulty
+                    })
+                    st.rerun()
+    
+    # Afficher le résultat
+    if st.session_state.answered and len(st.session_state.history) > 0:
+        last_answer = st.session_state.history[-1]
+        
+        if last_answer['correct']:
             st.markdown(f"""
-            <div class="score-card">
-                <h4>Question</h4>
-                <h2>{st.session_state.total_questions + 1}</h2>
+            <div class="correct-answer">
+                <h3>✅ Excellent ! Bonne réponse !</h3>
+                <p><strong>{question['correct_answer']}</strong> a bien remporté la médaille d'or ! 🥇</p>
+                <p>🏅 <strong>Athlète:</strong> {question['athlete']}</p>
+                <p>📅 <strong>Date:</strong> {question['medal_date']}</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            st.balloons()
+        else:
+            st.markdown(f"""
+            <div class="wrong-answer">
+                <h3>❌ Dommage ! Mauvaise réponse</h3>
+                <p>Votre réponse: <strong>{last_answer['your_answer']}</strong></p>
+                <p>La bonne réponse était: <strong>{question['correct_answer']}</strong> 🥇</p>
+                <p>🏅 <strong>Athlète:</strong> {question['athlete']}</p>
+                <p>📅 <strong>Date:</strong> {question['medal_date']}</p>
             </div>
             """, unsafe_allow_html=True)
         
-        # Options de réponse
-        if not st.session_state.answered:
-            st.markdown("#### 🌍 Sélectionnez le pays médaillé d'or:")
-            
-            # Adapter le nombre de colonnes selon la difficulté
-            if len(question['options']) <= 3:
-                cols = st.columns(3)
-            elif len(question['options']) <= 4:
-                cols = st.columns(2)
-            else:
-                cols = st.columns(3)
-            
-            for idx, option in enumerate(question['options']):
-                with cols[idx % len(cols)]:
-                    if st.button(
-                        f"🌍 {option}", 
-                        key=f"option_{idx}", 
-                        use_container_width=True,
-                        type="secondary"
-                    ):
-                        st.session_state.answered = True
-                        st.session_state.total_questions += 1
-                        
-                        is_correct = (option == question['correct_answer'])
-                        
-                        if is_correct:
-                            st.session_state.score += 1
-                        
-                        # Enregistrer dans l'historique
-                        st.session_state.history.append({
-                            'sport': question['sport'],
-                            'event': question['event'],
-                            'your_answer': option,
-                            'correct_answer': question['correct_answer'],
-                            'correct': is_correct,
-                            'athlete': question['athlete'],
-                            'timestamp': datetime.now(),
-                            'difficulty': st.session_state.difficulty
-                        })
-                        st.rerun()
-        
-        # Afficher le résultat
-        if st.session_state.answered and len(st.session_state.history) > 0:
-            last_answer = st.session_state.history[-1]
-            
-            if last_answer['correct']:
-                st.markdown(f"""
-                <div class="correct-answer">
-                    <h3>✅ Excellent ! Bonne réponse !</h3>
-                    <p><strong>{question['correct_answer']}</strong> a bien remporté la médaille d'or ! 🥇</p>
-                    <p>🏅 <strong>Athlète:</strong> {question['athlete']}</p>
-                    <p>📅 <strong>Date:</strong> {question['medal_date']}</p>
-                </div>
-                """, unsafe_allow_html=True)
-                
-                st.balloons()
-            else:
-                st.markdown(f"""
-                <div class="wrong-answer">
-                    <h3>❌ Dommage ! Mauvaise réponse</h3>
-                    <p>Votre réponse: <strong>{last_answer['your_answer']}</strong></p>
-                    <p>La bonne réponse était: <strong>{question['correct_answer']}</strong> 🥇</p>
-                    <p>🏅 <strong>Athlète:</strong> {question['athlete']}</p>
-                    <p>📅 <strong>Date:</strong> {question['medal_date']}</p>
-                </div>
-                """, unsafe_allow_html=True)
-            
-            # Bouton pour question suivante
-            col1, col2, col3 = st.columns([1, 2, 1])
-            with col2:
-                if st.button("➡️ Question suivante", type="primary", use_container_width=True):
-                    st.session_state.current_question = get_new_question(df, st.session_state.difficulty)
-                    st.session_state.answered = False
-                    st.rerun()
-
-# ============================================================================
-# TAB 2: STATISTICS
-# ============================================================================
-
-with tab2:
-    st.subheader("📊 Analyse des médailles Paris 2024")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        # Top 10 pays par nombre de médailles d'or
-        gold_by_country = df[df['medal'] == 'Gold'].groupby('country').size().reset_index(name='count')
-        gold_by_country = gold_by_country.sort_values('count', ascending=False).head(10)
-        
-        fig1 = px.bar(
-            gold_by_country,
-            x='country',
-            y='count',
-            title='🥇 Top 10 - Médailles d\'or par pays',
-            color='count',
-            color_continuous_scale='YlOrRd',
-            labels={'country': 'Pays', 'count': 'Nombre de médailles d\'or'}
-        )
-        fig1.update_layout(
-            xaxis_tickangle=-45,
-            height=400,
-            showlegend=False
-        )
-        st.plotly_chart(fig1, use_container_width=True)
-    
-    with col2:
-        # Distribution des médailles par type
-        medal_distribution = df.groupby('medal').size().reset_index(name='count')
-        
-        colors = {'Gold': '#FFD700', 'Silver': '#C0C0C0', 'Bronze': '#CD7F32'}
-        
-        fig2 = px.pie(
-            medal_distribution,
-            values='count',
-            names='medal',
-            title='🥇🥈🥉 Distribution globale des médailles',
-            color='medal',
-            color_discrete_map=colors,
-            hole=0.4
-        )
-        fig2.update_traces(
-            textposition='inside',
-            textinfo='percent+label',
-            textfont_size=14
-        )
-        fig2.update_layout(height=400)
-        st.plotly_chart(fig2, use_container_width=True)
-    
-    # Médailles par sport (top 15)
-    medals_by_sport = df[df['medal'] == 'Gold'].groupby('discipline').size().reset_index(name='count')
-    medals_by_sport = medals_by_sport.sort_values('count', ascending=True).tail(15)
-    
-    fig3 = px.bar(
-        medals_by_sport,
-        y='discipline',
-        x='count',
-        title='🎾 Top 15 - Médailles d\'or par sport',
-        orientation='h',
-        color='count',
-        color_continuous_scale='Blues',
-        labels={'discipline': 'Sport', 'count': 'Nombre de médailles d\'or'}
-    )
-    fig3.update_layout(height=500, showlegend=False)
-    st.plotly_chart(fig3, use_container_width=True)
-    
-    # Médailles par continent
-    if 'continent' in df.columns:
-        medals_by_continent = df[df['medal'] == 'Gold'].groupby('continent').size().reset_index(name='count')
-        medals_by_continent = medals_by_continent.sort_values('count', ascending=False)
-        
-        fig4 = px.bar(
-            medals_by_continent,
-            x='continent',
-            y='count',
-            title='🌍 Médailles d\'or par continent',
-            color='count',
-            color_continuous_scale='Greens',
-            labels={'continent': 'Continent', 'count': 'Nombre de médailles d\'or'}
-        )
-        fig4.update_layout(height=400, showlegend=False)
-        st.plotly_chart(fig4, use_container_width=True)
-
-# ============================================================================
-# TAB 3: HISTORY
-# ============================================================================
-
-with tab3:
-    st.subheader("🏆 Votre historique de jeu")
-    
-    if len(st.session_state.history) > 0:
-        history_df = pd.DataFrame(st.session_state.history)
-        
-        # Statistiques globales
-        col1, col2, col3, col4 = st.columns(4)
-        
-        stats = calculate_stats(st.session_state.history)
-        
-        with col1:
-            st.metric("✅ Bonnes réponses", stats['correct'])
-        
+        # Bouton pour question suivante
+        col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
-            st.metric("❌ Mauvaises réponses", stats['total'] - stats['correct'])
-        
-        with col3:
-            st.metric("📊 Taux de réussite", f"{stats['accuracy']:.1f}%")
-        
-        with col4:
-            st.metric("🔥 Série actuelle", f"{stats['streak']} 🏆")
-        
-        st.markdown("---")
-        
-        # Performance par sport
-        if len(history_df) > 0:
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                st.markdown("#### 📈 Performance par sport")
-                sport_performance = history_df.groupby('sport')['correct'].agg(['sum', 'count']).reset_index()
-                sport_performance.columns = ['Sport', 'Correct', 'Total']
-                sport_performance['Taux'] = (sport_performance['Correct'] / sport_performance['Total'] * 100).round(1)
-                sport_performance = sport_performance.sort_values('Taux', ascending=False)
-                
-                st.dataframe(
-                    sport_performance,
-                    use_container_width=True,
-                    hide_index=True
-                )
-            
-            with col2:
-                st.markdown("#### 🎯 Graphique de progression")
-                history_df['cumulative_score'] = history_df['correct'].cumsum()
-                history_df['question_num'] = range(1, len(history_df) + 1)
-                
-                fig_progress = px.line(
-                    history_df,
-                    x='question_num',
-                    y='cumulative_score',
-                    title='Évolution de votre score',
-                    labels={'question_num': 'Numéro de question', 'cumulative_score': 'Score cumulé'},
-                    markers=True
-                )
-                fig_progress.update_traces(line_color='#FF6B35', line_width=3)
-                fig_progress.update_layout(height=300)
-                st.plotly_chart(fig_progress, use_container_width=True)
-        
-        st.markdown("---")
-        
-        # Historique détaillé
-        st.markdown("#### 📋 Historique détaillé")
-        
-        # Inverser l'ordre pour montrer les plus récents en premier
-        display_history = history_df.iloc[::-1].copy()
-        display_history['Résultat'] = display_history['correct'].apply(lambda x: '✅ Correct' if x else '❌ Incorrect')
-        display_history['Timestamp'] = pd.to_datetime(display_history['timestamp']).dt.strftime('%Y-%m-%d %H:%M')
-        
-        st.dataframe(
-            display_history[['Timestamp', 'sport', 'event', 'your_answer', 'correct_answer', 'Résultat', 'difficulty']].rename(columns={
-                'sport': 'Sport',
-                'event': 'Épreuve',
-                'your_answer': 'Votre réponse',
-                'correct_answer': 'Bonne réponse',
-                'difficulty': 'Difficulté'
-            }),
-            use_container_width=True,
-            hide_index=True,
-            height=400
-        )
-        
-        # Bouton d'export
-        csv = display_history.to_csv(index=False).encode('utf-8')
-        st.download_button(
-            label="📥 Télécharger l'historique (CSV)",
-            data=csv,
-            file_name=f'olympic_quiz_history_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv',
-            mime='text/csv',
-        )
-    else:
-        st.info("🎮 Aucune partie jouée pour le moment. Commencez le quiz dans l'onglet **Quiz** !")
-        st.markdown("### 💡 Comment jouer ?")
-        st.markdown("""
-        1. Allez dans l'onglet **🎮 Quiz**
-        2. Lisez la question sur l'épreuve olympique
-        3. Devinez quel pays a remporté la médaille d'or
-        4. Cliquez sur votre réponse parmi les choix proposés
-        5. Consultez vos statistiques ici après avoir répondu !
-        """)
+            if st.button("➡️ Question suivante", type="primary", use_container_width=True):
+                st.session_state.current_question = get_new_question(df, st.session_state.difficulty)
+                st.session_state.answered = False
+                st.rerun()
 
 # ============================================================================
 # FOOTER
