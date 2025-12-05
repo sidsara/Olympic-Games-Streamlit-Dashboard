@@ -17,6 +17,8 @@ import sys
 # Add utils to path
 sys.path.append(str(Path(__file__).parent.parent))
 
+from utils.ui import colored_header
+
 # Page configuration
 st.set_page_config(
     page_title="Paris 2024 Olympics - Overview",
