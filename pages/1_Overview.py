@@ -296,7 +296,27 @@ st.markdown("## 📊 Key Performance Indicators")
 # Calculate KPIs
 total_athletes = len(filtered_athletes)
 total_countries = filtered_medals_total['country_code'].nunique() if len(filtered_medals_total) > 0 else data['nocs']['code'].nunique()
-total_sports = filtered_events['sport'].nunique() if len(filtered_events) > 0 else data['events']['sport'].nunique()
+
+# FIX: Pour calculer le nombre de sports, on doit utiliser les données filtrées qui contiennent les pays
+# On utilise filtered_medals qui a été filtré par pays ET contient la colonne 'discipline' (sport)
+if len(filtered_medals) > 0:
+    # Utiliser les médailles filtrées pour compter les sports uniques
+    total_sports = filtered_medals['discipline'].nunique()
+elif len(filtered_athletes) > 0:
+    # Alternative: utiliser les athlètes filtrés
+    # Extraire tous les sports uniques de la colonne disciplines
+    all_disciplines = []
+    for disciplines_str in filtered_athletes['disciplines'].dropna():
+        try:
+            sports_list = disciplines_str.strip("[]").replace("'", "").replace('"', '').split(',')
+            sports_list = [s.strip() for s in sports_list]
+            all_disciplines.extend(sports_list)
+        except:
+            pass
+    total_sports = len(set(all_disciplines))
+else:
+    # Si aucun filtre, utiliser toutes les données
+    total_sports = data['events']['sport'].nunique()
 
 # Calculate total medals based on medal type filters
 medal_columns = []
