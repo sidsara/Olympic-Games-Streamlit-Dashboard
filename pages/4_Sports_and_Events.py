@@ -270,9 +270,9 @@ if len(medal_by_sport) > 0:
             values='count',
             color='medal_type',
             color_discrete_map={
-                'Gold': '#FFD700',
+                'Gold': '#FFE766',
                 'Silver': '#C0C0C0',
-                'Bronze': '#CD7F32'
+                'Bronze': '#d99d73'
             },
             title='Medal Distribution by Sport (Treemap)',
             height=700
@@ -308,9 +308,9 @@ if len(medal_by_sport) > 0:
                 color='Medal Type',
                 barmode='group',
                 color_discrete_map={
-                    'Gold': '#FFD700',
+                    'Gold': '#FFE766',
                     'Silver': '#C0C0C0',
-                    'Bronze': '#CD7F32'
+                    'Bronze': '#d99d73'
                 },
                 title='Medal Count by Sport (Top 20)',
                 labels={'discipline': 'Sport/Discipline', 'Count': 'Number of Medals'},

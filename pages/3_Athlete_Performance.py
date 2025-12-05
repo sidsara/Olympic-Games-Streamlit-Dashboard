@@ -139,12 +139,7 @@ def apply_filters(df):
 
 st.title("👤 Athlete Performance: The Human Story")
 st.info("📸 Athlete photos are retrieved from Wikipedia automatically when available.")
-st.markdown("""
-Dive deep into the athletes' world. Explore individual profiles, demographics, 
-and discover the champions of Paris 2024.
-""")
 
-st.markdown("---")
 
 # ============================================================================
 # SECTION 1: ATHLETE DETAILED PROFILE CARD
@@ -504,9 +499,9 @@ if len(top_athletes) > 0:
         title=f'Top {top_n} Athletes by Medal Count',
         labels={'name': 'Athlete', 'Count': 'Number of Medals'},
         color_discrete_map={
-            'Gold': '#FFD700',
+            'Gold': '#FFE766',
             'Silver': '#C0C0C0',
-            'Bronze': '#CD7F32'
+            'Bronze': '#d99d73'
         },
         text='Count',
         height=600,
@@ -543,7 +538,7 @@ if len(top_athletes) > 0:
     
     with spotlight_col1:
         st.markdown("""
-        <div style='text-align: center; padding: 20px; background-color: #FFD700; border-radius: 10px;'>
+        <div style='text-align: center; padding: 20px; background-color: #FFE766; border-radius: 10px;'>
             <div style='font-size: 80px;'>🏆</div>
             <p style='font-size: 14px; font-weight: bold;'>TOP MEDALIST</p>
         </div>

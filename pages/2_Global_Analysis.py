@@ -234,9 +234,9 @@ with tab1:
         values='count',
         color='medal_type',
         color_discrete_map={
-            'Gold': '#FFD700',
+            'Gold': '#FFE766',
             'Silver': '#C0C0C0',
-            'Bronze': '#CD7F32'
+            'Bronze': '#d99d73'
         },
         title='Medal Distribution Hierarchy (Click to drill down)',
         height=700
@@ -253,9 +253,9 @@ with tab2:
         values='count',
         color='medal_type',
         color_discrete_map={
-            'Gold': '#FFD700',
+            'Gold': '#FFE766',
             'Silver': '#C0C0C0',
-            'Bronze': '#CD7F32'
+            'Bronze': '#d99d73'
         },
         title='Medal Distribution Treemap',
         height=700
@@ -295,9 +295,9 @@ fig_continent = px.bar(
     color='Medal Type',
     barmode='group',
     color_discrete_map={
-        'Gold': '#FFD700',
+        'Gold': '#FFE766',
         'Silver': '#C0C0C0',
-        'Bronze': '#CD7F32'
+        'Bronze': '#d99d73'
     },
     title='Medal Count by Continent',
     labels={'continent': 'Continent', 'Count': 'Number of Medals'},
@@ -370,9 +370,9 @@ fig_country = px.bar(
     color='Medal Type',
     barmode='group',
     color_discrete_map={
-        'Gold': '#FFD700',
+        'Gold': '#FFE766',
         'Silver': '#C0C0C0',
-        'Bronze': '#CD7F32'
+        'Bronze': '#d99d73'
     },
     title='Top 20 Countries by Medal Count',
     labels={'country': 'Country', 'Count': 'Number of Medals'},

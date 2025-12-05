@@ -283,9 +283,9 @@ with col_left:
             names='Medal Type',
             color='Medal Type',
             color_discrete_map={
-                'Gold': '#FFD700',
+                'Gold': '#FFE766',
                 'Silver': '#C0C0C0',
-                'Bronze': '#CD7F32'
+                'Bronze': '#d99d73'
             },
             hole=0.4,  # Donut chart
             title="Distribution of Medals by Type"
@@ -341,9 +341,9 @@ with col_right:
                 color='Medal Type',
                 orientation='h',
                 color_discrete_map={
-                    'Gold': '#FFD700',
+                    'Gold': '#FFE766',
                     'Silver': '#C0C0C0',
-                    'Bronze': '#CD7F32'
+                    'Bronze': '#d99d73'
                 },
                 title="Top 10 Countries by Medal Count",
                 labels={'Count': 'Number of Medals', 'Country': ''}
@@ -404,9 +404,9 @@ with col1:
                 color='Medal Type',
                 orientation='h',
                 color_discrete_map={
-                    'Gold': '#FFD700',
+                    'Gold': '#FFE766',
                     'Silver': '#C0C0C0',
-                    'Bronze': '#CD7F32'
+                    'Bronze': '#d99d73'
                 },
                 title="Medal Distribution by Continent",
                 barmode='group'

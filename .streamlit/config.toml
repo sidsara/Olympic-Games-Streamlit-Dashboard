@@ -3,10 +3,10 @@
 primaryColor="#4b5e87"
 
 # Couleur de fond principal : Blanc cassé pour le meilleur contraste avec le texte.
-backgroundColor="#e8fcfc"
+backgroundColor="#e8fcfcff"
 
 # Couleur de fond secondaire : Bleu Ciel pour la barre latérale et les conteneurs/cards.
-secondaryBackgroundColor="#9ccc9c"
+secondaryBackgroundColor="#d2ffd2ff"
 
 # Couleur du texte : Noir Profond pour la lisibilité.
 textColor="#1a1a1a"
