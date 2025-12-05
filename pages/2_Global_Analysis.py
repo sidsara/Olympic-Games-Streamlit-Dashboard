@@ -157,22 +157,299 @@ if selected_medal_type:
 else:
     medals_for_map['filtered_total'] = medals_for_map['Total']
 
-# Create choropleth map
+# Mapping des codes NOC vers ISO-3 standard pour Plotly
+iso_mapping = {
+    # A
+    'AFG': 'AFG',
+    'ALB': 'ALB',
+    'ALG': 'DZA',
+    'AND': 'AND',
+    'ANG': 'AGO',
+    'ANT': 'ATG',
+    'ARG': 'ARG',
+    'ARM': 'ARM',
+    'ARU': 'ABW',
+    'ASA': 'ASM',
+    'AUT': 'AUT',
+    'AZE': 'AZE',
+
+    # B
+    'BAH': 'BHS',
+    'BAN': 'BGD',
+    'BAR': 'BRB',
+    'BDI': 'BDI',
+    'BEL': 'BEL',
+    'BEN': 'BEN',
+    'BER': 'BMU',
+    'BHU': 'BTN',
+    'BIH': 'BIH',
+    'BLR': 'BLR',
+    'BOL': 'BOL',
+    'BOT': 'BWA',
+    'BRA': 'BRA',
+    'BRN': 'BRN',
+    'BRU': 'BRN',
+    'BUL': 'BGR',
+    'BUR': 'BFA',
+    'BVT': None,  # Délégation spéciale
+    'BWA': 'BWA',
+
+    # C
+    'CAF': 'CAF',
+    'CAM': 'KHM',
+    'CAN': 'CAN',
+    'CAY': 'CYM',
+    'CGO': 'COG',
+    'CHA': 'TCD',
+    'CHI': 'CHL',
+    'CHN': 'CHN',
+    'CIV': 'CIV',
+    'CMR': 'CMR',
+    'COD': 'COD',
+    'COK': 'COK',
+    'COL': 'COL',
+    'COM': 'COM',
+    'CPV': 'CPV',
+    'CRC': 'CRI',
+    'CRO': 'HRV',
+    'CUB': 'CUB',
+    'CYP': 'CYP',
+    'CZE': 'CZE',
+
+    # D
+    'DEN': 'DNK',
+    'DJI': 'DJI',
+    'DMA': 'DMA',
+    'DOM': 'DOM',
+
+    # E
+    'ECU': 'ECU',
+    'EGY': 'EGY',
+    'ERI': 'ERI',
+    'ESA': 'SLV',
+    'ESP': 'ESP',
+    'EST': 'EST',
+    'ETH': 'ETH',
+
+    # F
+    'FIJ': 'FJI',
+    'FIN': 'FIN',
+    'FRA': 'FRA',
+
+    # G
+    'GAB': 'GAB',
+    'GAM': 'GMB',
+    'GBR': 'GBR',
+    'GBS': 'GNB',
+    'GEO': 'GEO',
+    'GER': 'DEU',
+    'GHA': 'GHA',
+    'GRE': 'GRC',
+    'GRN': 'GRD',
+    'GUA': 'GTM',
+    'GUI': 'GIN',
+    'GUM': 'GUM',
+    'GUY': 'GUY',
+
+    # H
+    'HAI': 'HTI',
+    'HKG': 'HKG',
+    'HON': 'HND',
+    'HUN': 'HUN',
+
+    # I
+    'INA': 'IDN',
+    'IND': 'IND',
+    'IRI': 'IRN',
+    'IRL': 'IRL',
+    'IRQ': 'IRQ',
+    'ISL': 'ISL',
+    'ISR': 'ISR',
+    'ISV': 'VIR',
+    'ITA': 'ITA',
+
+    # J
+    'JAM': 'JAM',
+    'JOR': 'JOR',
+    'JPN': 'JPN',
+
+    # K
+    'KAZ': 'KAZ',
+    'KEN': 'KEN',
+    'KGZ': 'KGZ',
+    'KIR': 'KIR',
+    'KOR': 'KOR',
+    'KOS': 'XKX',
+    'KSA': 'SAU',
+    'KUW': 'KWT',
+
+    # L
+    'LAO': 'LAO',
+    'LAT': 'LVA',
+    'LBN': 'LBN',
+    'LBR': 'LBR',
+    'LCA': 'LCA',
+    'LES': 'LSO',
+    'LIB': 'LBN',
+    'LIE': 'LIE',
+    'LTU': 'LTU',
+    'LUX': 'LUX',
+    'LVA': 'LVA',
+
+    # M
+    'MAD': 'MDG',
+    'MAR': 'MAR',
+    'MAS': 'MYS',
+    'MAW': 'MWI',
+    'MDA': 'MDA',
+    'MDV': 'MDV',
+    'MEX': 'MEX',
+    'MGL': 'MNG',
+    'MKD': 'MKD',
+    'MLI': 'MLI',
+    'MLT': 'MLT',
+    'MNE': 'MNE',
+    'MON': 'MCO',
+    'MOZ': 'MOZ',
+    'MRI': 'MUS',
+    'MTN': 'MRT',
+    'MYA': 'MMR',
+
+    # N
+    'NAM': 'NAM',
+    'NCA': 'NIC',
+    'NED': 'NLD',
+    'NEP': 'NPL',
+    'NGR': 'NGA',
+    'NIG': 'NER',
+    'NOR': 'NOR',
+    'NRU': 'NRU',
+    'NZL': 'NZL',
+
+    # O
+    'OMA': 'OMN',
+
+    # P
+    'PAK': 'PAK',
+    'PAN': 'PAN',
+    'PAR': 'PRY',
+    'PER': 'PER',
+    'PHI': 'PHL',
+    'PLE': 'PSE',
+    'PLW': 'PLW',
+    'PNG': 'PNG',
+    'POL': 'POL',
+    'POR': 'PRT',
+    'PRI': 'PRI',
+    'PRK': 'PRK',
+    'PUR': 'PRI',
+
+    # Q
+    'QAT': 'QAT',
+
+    # R
+    'ROU': 'ROU',
+    'RSA': 'ZAF',
+    'RUS': 'RUS',
+    'RWA': 'RWA',
+
+    # S
+    'SAM': 'WSM',
+    'SEN': 'SEN',
+    'SEY': 'SYC',
+    'SIN': 'SGP',
+    'SKN': 'KNA',
+    'SLE': 'SLE',
+    'SLO': 'SVN',
+    'SMR': 'SMR',
+    'SOL': 'SLB',
+    'SOM': 'SOM',
+    'SRB': 'SRB',
+    'SRI': 'LKA',
+    'SUD': 'SDN',
+    'SUI': 'CHE',
+    'SUR': 'SUR',
+    'SVK': 'SVK',
+    'SVN': 'SVN',
+    'SWE': 'SWE',
+    'SWZ': 'SWZ',
+    'SYR': 'SYR',
+
+    # T
+    'TAN': 'TZA',
+    'TGA': 'TON',
+    'THA': 'THA',
+    'TJK': 'TJK',
+    'TKM': 'TKM',
+    'TLS': 'TLS',
+    'TOG': 'TGO',
+    'TPE': 'TWN',
+    'TTO': 'TTO',
+    'TUN': 'TUN',
+    'TUR': 'TUR',
+    'TUV': 'TUV',
+
+    # U
+    'UAE': 'ARE',
+    'UGA': 'UGA',
+    'UKR': 'UKR',
+    'URU': 'URY',
+    'USA': 'USA',
+    'UZB': 'UZB',
+
+    # V
+    'VAN': 'VUT',
+    'VEN': 'VEN',
+    'VIE': 'VNM',
+
+    # Y
+    'YEM': 'YEM',
+
+    # Z
+    'ZAM': 'ZMB',
+    'ZIM': 'ZWE',
+
+    # Territoires spéciaux / délégations sans ISO officiel
+    'AIN': None,   # Athlètes Individuels Neutres
+    'EOR': None,   # Équipe des réfugiés
+    'IOC': None,   # Comité international
+    'OAR': None,   # Olympic Athletes from Russia
+    'ROC': None,   # Russian Olympic Committee
+    'RPC': None,   # Paralympic Russia
+}
+
+
+# Créer une colonne iso_code pour la carte
+medals_for_map['iso_code'] = medals_for_map['country_code'].map(
+    lambda x: iso_mapping.get(x, x)
+)
+
+# Filtrer les pays sans code ISO valide
+medals_for_map_valid = medals_for_map[
+    (medals_for_map['iso_code'].notna()) & 
+    (medals_for_map['filtered_total'] > 0)
+].copy()
+
+# Créer la carte choropleth
 fig_map = px.choropleth(
-    medals_for_map,
-    locations='country_code',
+    medals_for_map_valid,
+    locations='iso_code',
     locationmode='ISO-3',
     color='filtered_total',
     hover_name='country',
     hover_data={
-        'country_code': False,
+        'country_code': True,
+        'iso_code': False,
         'Gold Medal': True,
         'Silver Medal': True,
         'Bronze Medal': True,
         'filtered_total': True
     },
     color_continuous_scale='YlOrRd',
-    labels={'filtered_total': 'Total Medals'},
+    labels={
+        'filtered_total': 'Total Medals',
+        'country_code': 'NOC Code'
+    },
     title=''
 )
 
@@ -181,28 +458,52 @@ fig_map.update_layout(
     geo=dict(
         showframe=False,
         showcoastlines=True,
-        projection_type='natural earth'
+        projection_type='natural earth',
+        showcountries=True,
+        countrycolor='lightgray'
     ),
     margin=dict(l=0, r=0, t=0, b=0)
 )
 
 st.plotly_chart(fig_map, use_container_width=True)
 
-# Map insights
+# Map insights avec correction
 col1, col2, col3, col4 = st.columns(4)
+
 with col1:
-    st.metric("Countries Participating", len(medals_for_map[medals_for_map['filtered_total'] > 0]))
+    countries_on_map = len(medals_for_map_valid)
+    total_countries = len(medals_for_map[medals_for_map['filtered_total'] > 0])
+    st.metric(
+        "Countries on Map", 
+        countries_on_map,
+        delta=f"{total_countries - countries_on_map} not shown" if total_countries > countries_on_map else None
+    )
+
 with col2:
     st.metric("Total Medals Awarded", int(medals_for_map['filtered_total'].sum()))
+
 with col3:
     top_country = medals_for_map.nlargest(1, 'filtered_total')
     if not top_country.empty:
         st.metric("Leading Country", top_country['country'].values[0])
+
 with col4:
     avg_medals = medals_for_map[medals_for_map['filtered_total'] > 0]['filtered_total'].mean()
     st.metric("Avg Medals/Country", f"{avg_medals:.1f}")
 
-st.markdown("---")
+# Afficher les pays exclus de la carte (pour debug/info)
+if total_countries > countries_on_map:
+    with st.expander("ℹ️ Countries with medals not shown on map"):
+        excluded = medals_for_map[
+            (medals_for_map['filtered_total'] > 0) & 
+            (medals_for_map['iso_code'].isna())
+        ][['country', 'country_code', 'Gold Medal', 'Silver Medal', 'Bronze Medal', 'Total']]
+        
+        if not excluded.empty:
+            st.warning(f"⚠️ {len(excluded)} country/countries have medals but cannot be displayed on the map due to special NOC codes:")
+            st.dataframe(excluded, use_container_width=True, hide_index=True)
+        else:
+            st.info("All countries with medals are displayed on the map.")
 
 # ============================================================================
 # SECTION 2: MEDAL HIERARCHY BY CONTINENT
