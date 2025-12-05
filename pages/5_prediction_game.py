@@ -24,66 +24,56 @@ st.set_page_config(
 # Define paths
 DATA_DIR = Path(__file__).parent.parent / 'data'
 
-# CSS personnalisé moderne
+# CSS simplifié et cohérent avec les autres pages
 st.markdown("""
     <style>
-    /* Variables CSS */
-    :root {
-        --primary-gold: #FFD700;
-        --secondary-silver: #C0C0C0;
-        --tertiary-bronze: #CD7F32;
-        --accent: #FF6B35;
-    }
-    
     .main-title {
-        font-size: 3.5rem;
-        font-weight: 900;
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #0066CC;
         text-align: center;
-        background: linear-gradient(135deg, var(--primary-gold) 0%, var(--accent) 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        padding: 1rem 0;
-        animation: fadeIn 1s ease-out;
-        text-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+        margin-bottom: 1rem;
     }
     
     .subtitle {
-        font-size: 1.3rem;
-        color: #B4B4B4;
+        font-size: 1.1rem;
+        color: #666;
         text-align: center;
         margin-bottom: 2rem;
-        animation: fadeIn 1.5s ease-out;
     }
     
     .score-card {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        padding: 1.5rem;
-        border-radius: 15px;
-        color: white;
+        background-color: #f0f2f6;
+        padding: 1.2rem;
+        border-radius: 8px;
         text-align: center;
         margin: 1rem 0;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        transition: all 0.3s ease;
+        border: 1px solid #ddd;
     }
     
-    .score-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 12px 40px rgba(240, 147, 251, 0.4);
+    .score-card h4 {
+        color: #0066CC;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .score-card h2 {
+        color: #333;
+        margin: 0;
     }
     
     .correct-answer {
-        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
-        padding: 1.5rem;
-        border-radius: 15px;
-        border-left: 5px solid #28a745;
+        background-color: #d4edda;
+        padding: 1.2rem;
+        border-radius: 8px;
+        border-left: 4px solid #28a745;
         margin: 1rem 0;
-        animation: slideIn 0.5s ease-out;
-        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.2);
     }
     
     .correct-answer h3 {
         color: #155724;
         margin-bottom: 0.5rem;
+        font-size: 1.3rem;
     }
     
     .correct-answer p {
@@ -92,18 +82,17 @@ st.markdown("""
     }
     
     .wrong-answer {
-        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
-        padding: 1.5rem;
-        border-radius: 15px;
-        border-left: 5px solid #dc3545;
+        background-color: #f8d7da;
+        padding: 1.2rem;
+        border-radius: 8px;
+        border-left: 4px solid #dc3545;
         margin: 1rem 0;
-        animation: slideIn 0.5s ease-out;
-        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.2);
     }
     
     .wrong-answer h3 {
         color: #721c24;
         margin-bottom: 0.5rem;
+        font-size: 1.3rem;
     }
     
     .wrong-answer p {
@@ -112,46 +101,28 @@ st.markdown("""
     }
     
     .question-card {
-        background: rgba(30, 30, 46, 0.8);
-        backdrop-filter: blur(10px);
-        border-radius: 20px;
-        padding: 2rem;
-        border: 1px solid rgba(255, 107, 53, 0.2);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-        margin-bottom: 2rem;
+        background-color: #ffffff;
+        border-radius: 10px;
+        padding: 1.5rem;
+        border: 1px solid #ddd;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 1.5rem;
     }
     
     .question-card h3 {
-        color: var(--primary-gold);
-        margin-bottom: 1rem;
+        color: #0066CC;
+        margin-bottom: 0.8rem;
+        font-size: 1.5rem;
     }
     
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
+    .question-card p {
+        color: #333;
+        margin: 0.3rem 0;
     }
     
-    @keyframes slideIn {
-        from { transform: translateX(-100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-    }
-    
-    /* Boutons stylisés */
-    .stButton > button {
-        background: linear-gradient(135deg, var(--accent) 0%, #FF8C61 100%);
-        color: white;
-        border: none;
-        border-radius: 10px;
-        padding: 12px 30px;
-        font-weight: 600;
-        font-size: 1rem;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
-    }
-    
-    .stButton > button:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 25px rgba(255, 107, 53, 0.6);
+    .info-text {
+        color: #666;
+        font-size: 0.9rem;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -290,19 +261,20 @@ if df is None or len(df) == 0:
     st.stop()
 
 # Titre principal
-st.markdown('<h1 class="main-title">🏅 Olympic Medal Predictor</h1>', unsafe_allow_html=True)
-st.markdown('<p class="subtitle">Paris 2024 - Testez vos connaissances sur les médaillés olympiques !</p>', unsafe_allow_html=True)
+st.markdown('<p class="main-title">🏅 Jeu de Prédiction des Médailles</p>', unsafe_allow_html=True)
+st.markdown('<p class="subtitle">Testez vos connaissances sur les médaillés des Jeux Olympiques de Paris 2024</p>', unsafe_allow_html=True)
+st.markdown("---")
 
 # ============================================================================
 # SIDEBAR
 # ============================================================================
 
 with st.sidebar:
-    st.header("🎮 Paramètres du jeu")
+    st.header("🎮 Paramètres")
     
     # Sélection de la difficulté
     st.session_state.difficulty = st.selectbox(
-        "🎯 Difficulté",
+        "Niveau de difficulté",
         options=['easy', 'medium', 'hard'],
         format_func=lambda x: {'easy': '😊 Facile (3 choix)', 'medium': '😐 Moyen (4 choix)', 'hard': '😈 Difficile (6 choix)'}[x],
         index=1
@@ -317,26 +289,26 @@ with st.sidebar:
     
     col1, col2 = st.columns(2)
     with col1:
-        st.metric("🎯 Score", f"{stats['correct']}/{stats['total']}")
+        st.metric("Score", f"{stats['correct']}/{stats['total']}")
     with col2:
-        st.metric("📈 Précision", f"{stats['accuracy']:.1f}%")
+        st.metric("Précision", f"{stats['accuracy']:.1f}%")
     
-    st.metric("🔥 Série actuelle", f"{stats['streak']} 🏆")
-    st.metric("⭐ Meilleure série", f"{stats['best_streak']} 🏆")
+    st.metric("🔥 Série actuelle", f"{stats['streak']}")
+    st.metric("⭐ Meilleure série", f"{stats['best_streak']}")
     
     st.markdown("---")
     
     # Statistiques du dataset
     st.subheader("📈 Base de données")
-    st.write(f"🏆 Médailles d'or: {len(df[df['medal'] == 'Gold'])}")
-    st.write(f"🌍 Pays: {df['country'].nunique()}")
-    st.write(f"🎾 Sports: {df['discipline'].nunique()}")
-    st.write(f"🏅 Épreuves: {df['event'].nunique()}")
+    st.write(f"**Médailles d'or:** {len(df[df['medal'] == 'Gold'])}")
+    st.write(f"**Pays:** {df['country'].nunique()}")
+    st.write(f"**Sports:** {df['discipline'].nunique()}")
+    st.write(f"**Épreuves:** {df['event'].nunique()}")
     
     st.markdown("---")
     
     # Bouton de réinitialisation
-    if st.button("🔄 Réinitialiser", use_container_width=True, type="primary"):
+    if st.button("🔄 Réinitialiser", use_container_width=True):
         st.session_state.score = 0
         st.session_state.total_questions = 0
         st.session_state.current_question = None
@@ -348,7 +320,7 @@ with st.sidebar:
 # QUIZ GAME
 # ============================================================================
 
-st.markdown("### 🎯 Devinez quel pays a remporté la médaille d'or !")
+st.markdown("## 🎯 Quiz")
 
 # Générer ou récupérer la question actuelle
 if st.session_state.current_question is None:
@@ -358,12 +330,12 @@ if st.session_state.current_question is None:
 if st.session_state.current_question:
     question = st.session_state.current_question
     
-    # Afficher la question dans une carte stylisée
+    # Afficher la question dans une carte
     st.markdown(f"""
     <div class="question-card">
         <h3>🏅 {question['sport']}</h3>
-        <p style="font-size: 1.1rem; color: #FAFAFA;"><strong>Épreuve:</strong> {question['event']}</p>
-        <p style="color: #B4B4B4;">Genre: {question['gender']} | Date: {question['medal_date']}</p>
+        <p><strong>Épreuve:</strong> {question['event']}</p>
+        <p class="info-text">Genre: {question['gender']} • Date: {question['medal_date']}</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -372,14 +344,14 @@ if st.session_state.current_question:
     with col2:
         st.markdown(f"""
         <div class="score-card">
-            <h4>Question</h4>
+            <h4>QUESTION</h4>
             <h2>{st.session_state.total_questions + 1}</h2>
         </div>
         """, unsafe_allow_html=True)
     
     # Options de réponse
     if not st.session_state.answered:
-        st.markdown("#### 🌍 Sélectionnez le pays médaillé d'or:")
+        st.markdown("#### Quel pays a remporté la médaille d'or ?")
         
         # Adapter le nombre de colonnes selon la difficulté
         if len(question['options']) <= 3:
@@ -394,8 +366,7 @@ if st.session_state.current_question:
                 if st.button(
                     f"🌍 {option}", 
                     key=f"option_{idx}", 
-                    use_container_width=True,
-                    type="secondary"
+                    use_container_width=True
                 ):
                     st.session_state.answered = True
                     st.session_state.total_questions += 1
@@ -425,10 +396,10 @@ if st.session_state.current_question:
         if last_answer['correct']:
             st.markdown(f"""
             <div class="correct-answer">
-                <h3>✅ Excellent ! Bonne réponse !</h3>
-                <p><strong>{question['correct_answer']}</strong> a bien remporté la médaille d'or ! 🥇</p>
-                <p>🏅 <strong>Athlète:</strong> {question['athlete']}</p>
-                <p>📅 <strong>Date:</strong> {question['medal_date']}</p>
+                <h3>✅ Bonne réponse !</h3>
+                <p><strong>{question['correct_answer']}</strong> a bien remporté la médaille d'or.</p>
+                <p><strong>Athlète:</strong> {question['athlete']}</p>
+                <p><strong>Date:</strong> {question['medal_date']}</p>
             </div>
             """, unsafe_allow_html=True)
             
@@ -436,18 +407,18 @@ if st.session_state.current_question:
         else:
             st.markdown(f"""
             <div class="wrong-answer">
-                <h3>❌ Dommage ! Mauvaise réponse</h3>
-                <p>Votre réponse: <strong>{last_answer['your_answer']}</strong></p>
-                <p>La bonne réponse était: <strong>{question['correct_answer']}</strong> 🥇</p>
-                <p>🏅 <strong>Athlète:</strong> {question['athlete']}</p>
-                <p>📅 <strong>Date:</strong> {question['medal_date']}</p>
+                <h3>❌ Mauvaise réponse</h3>
+                <p><strong>Votre réponse:</strong> {last_answer['your_answer']}</p>
+                <p><strong>Bonne réponse:</strong> {question['correct_answer']}</p>
+                <p><strong>Athlète:</strong> {question['athlete']}</p>
+                <p><strong>Date:</strong> {question['medal_date']}</p>
             </div>
             """, unsafe_allow_html=True)
         
         # Bouton pour question suivante
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
-            if st.button("➡️ Question suivante", type="primary", use_container_width=True):
+            if st.button("➡️ Question suivante", use_container_width=True):
                 st.session_state.current_question = get_new_question(df, st.session_state.difficulty)
                 st.session_state.answered = False
                 st.rerun()
@@ -459,8 +430,7 @@ if st.session_state.current_question:
 st.markdown("---")
 st.markdown("""
 <div style='text-align: center; color: #666; padding: 20px;'>
-    <p>🏅 <strong>Olympic Medal Predictor</strong> | Paris 2024 Olympics</p>
-    <p>Données officielles des Jeux Olympiques de Paris 2024</p>
-    <p>Made with ❤️ using Streamlit & Python</p>
+    <p>📊 Jeu de Prédiction des Médailles | Paris 2024 Olympics Dashboard</p>
+    <p>Data Source: Kaggle - Paris 2024 Olympic Summer Games</p>
 </div>
 """, unsafe_allow_html=True)
