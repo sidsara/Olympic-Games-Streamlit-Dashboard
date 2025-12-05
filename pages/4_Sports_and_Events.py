@@ -47,6 +47,9 @@ def load_data():
         venues_cleaned['date_start'] = pd.to_datetime(venues_cleaned['date_start'], errors='coerce')
         venues_cleaned['date_end'] = pd.to_datetime(venues_cleaned['date_end'], errors='coerce')
         
+        # Calculate Venue Duration Days for Section 3
+        venues_cleaned['duration_days'] = (venues_cleaned['date_end'] - venues_cleaned['date_start']).dt.days + 1
+        
         return {
             'events': events_enriched,
             'sport_summary': sport_summary,
@@ -137,13 +140,7 @@ def apply_filters(df):
     if selected_gender != 'All' and 'gender' in filtered_df.columns:
         filtered_df = filtered_df[filtered_df['gender'] == selected_gender]
     
-    # Date filter
-    if date_range and len(date_range) == 2:
-        if 'start_date' in filtered_df.columns:
-            filtered_df = filtered_df[
-                (filtered_df['start_date'].dt.date >= date_range[0]) &
-                (filtered_df['start_date'].dt.date <= date_range[1])
-            ]
+    # Suppression du filtre par date
     
     return filtered_df
 
@@ -256,6 +253,7 @@ st.markdown("**Treemap visualization of medal distribution across sports**")
 # Prepare medal data by sport
 filtered_medals = apply_filters(data['medals'])
 
+# Group by discipline and medal type
 medal_by_sport = filtered_medals.groupby(['discipline', 'medal_type']).size().reset_index(name='count')
 
 if len(medal_by_sport) > 0:
@@ -294,13 +292,15 @@ if len(medal_by_sport) > 0:
         if not available_medal_types:
             st.warning("No medal data available for bar chart visualization.")
         else:
+            # CORRECTION DE L'ERREUR DE COUPURE DANS MELT ICI
             medal_melted = medal_pivot.melt(
                 id_vars=['discipline'],
                 value_vars=available_medal_types,
                 var_name='Medal Type',
                 value_name='Count'
             )
-        
+            # FIN DE LA CORRECTION
+            
             fig_bar = px.bar(
                 medal_melted,
                 x='discipline',
@@ -323,15 +323,27 @@ if len(medal_by_sport) > 0:
     # Sport statistics table
     st.subheader("📋 Medal Statistics by Sport")
     
+    # Harmonisation des noms de colonnes pour compatibilité avec le code
     sport_stats = data['sport_summary'].copy()
-    
+    # Correction : renommer les colonnes pour correspondre à l'attendu par le code
+    sport_stats = sport_stats.rename(columns={
+        'Bronze Medal': 'bronze_medals',
+        'Gold Medal': 'gold_medals',
+        'Silver Medal': 'silver_medals'
+    })
+
     if selected_sport != 'All':
         sport_stats = sport_stats[sport_stats['sport'] == selected_sport]
     
     # Sort by total medals
     sport_stats = sport_stats.sort_values('total_medals', ascending=False).head(20)
     
-    display_cols = ['sport', 'gold_medals', 'silver_medals', 'bronze_medals', 'total_medals', 'num_events', 'medals_per_event']
+    display_cols = ['sport', 'gold_medals', 'silver_medals', 'bronze_medals', 'total_medals', 'num_events']
+    # 'medals_per_event' peut ne pas exister, on l'ajoute si besoin
+    if 'medals_per_event' not in sport_stats.columns and 'total_medals' in sport_stats.columns and 'num_events' in sport_stats.columns:
+        sport_stats['medals_per_event'] = sport_stats['total_medals'] / sport_stats['num_events']
+    display_cols.append('medals_per_event')
+
     if all(col in sport_stats.columns for col in display_cols):
         display_df = sport_stats[display_cols].copy()
         display_df.columns = ['Sport', '🥇 Gold', '🥈 Silver', '🥉 Bronze', '📊 Total', '🎯 Events', '📈 Medals/Event']
@@ -342,6 +354,8 @@ if len(medal_by_sport) > 0:
             hide_index=True,
             height=400
         )
+    else:
+        st.warning("⚠️ The required columns for the statistics table are missing in 'sport_summary.csv'.")
 else:
     st.warning("⚠️ No medal data available for the current filters.")
 
@@ -357,18 +371,27 @@ st.markdown("**Interactive map showing locations of Olympic venues in Paris**")
 # Prepare venue data
 venues_data = data['venues'].copy()
 
+# The venue filter logic is tricky here. We want to show all venues unless a specific sport is selected.
+# If a specific sport is selected, we filter venues that host that sport.
 if selected_sport != 'All':
     # Filter venues that host the selected sport
+    # We use data['venues'] to get the 'sports' column, as 'schedules' DF does not have it.
     venues_data = venues_data[venues_data['sports'].str.contains(selected_sport, na=False, case=False)]
+
+# Apply Venue filter (from sidebar)
+if selected_venue != 'All':
+    venues_data = venues_data[venues_data['venue'] == selected_venue]
 
 # Remove venues without coordinates
 venues_data = venues_data.dropna(subset=['latitude', 'longitude'])
 
 if len(venues_data) > 0:
-    # Add event count per venue
-    venue_event_count = data['schedules'].groupby('venue').size().reset_index(name='event_count')
+    # Add event count per venue (using the filtered schedules for accuracy)
+    venue_event_count = filtered_schedules.groupby('venue').size().reset_index(name='event_count')
+    
+    # Merge event count into the venues data
     venues_data = venues_data.merge(venue_event_count, on='venue', how='left')
-    venues_data['event_count'] = venues_data['event_count'].fillna(0)
+    venues_data['event_count'] = venues_data['event_count'].fillna(0).astype(int)
     
     # Create scatter mapbox
     fig_map = px.scatter_mapbox(
@@ -415,8 +438,11 @@ if len(venues_data) > 0:
     
     with col3:
         busiest_venue = venues_data.nlargest(1, 'event_count')
-        if not busiest_venue.empty:
+        if not busiest_venue.empty and busiest_venue['event_count'].values[0] > 0:
             st.metric("🔥 Busiest Venue", busiest_venue['venue'].values[0])
+        else:
+            st.metric("🔥 Busiest Venue", "N/A")
+
     
     with col4:
         avg_events = venues_data['event_count'].mean()
@@ -447,7 +473,7 @@ st.markdown("---")
 st.header("🔍 Sport Deep Dive Analysis")
 st.markdown("**Detailed analysis of a selected sport**")
 
-# Sport selector
+# Sport selector - use all sports list
 deep_dive_sport = st.selectbox(
     "Select a sport for detailed analysis:",
     sorted(data['sport_summary']['sport'].unique()),
@@ -455,7 +481,7 @@ deep_dive_sport = st.selectbox(
 )
 
 if deep_dive_sport:
-    # Get sport data
+    # Get sport data from summary
     sport_data = data['sport_summary'][data['sport_summary']['sport'] == deep_dive_sport]
     
     if not sport_data.empty:
@@ -465,19 +491,20 @@ if deep_dive_sport:
         col1, col2, col3, col4, col5 = st.columns(5)
         
         with col1:
-            st.metric("🥇 Gold Medals", int(sport_info['gold_medals']))
+            st.metric("🥇 Gold Medals", int(sport_info.get('gold_medals', 0)))
         
         with col2:
-            st.metric("🥈 Silver Medals", int(sport_info['silver_medals']))
+            st.metric("🥈 Silver Medals", int(sport_info.get('silver_medals', 0)))
         
         with col3:
-            st.metric("🥉 Bronze Medals", int(sport_info['bronze_medals']))
+            st.metric("🥉 Bronze Medals", int(sport_info.get('bronze_medals', 0)))
         
         with col4:
-            st.metric("🎯 Total Events", int(sport_info['num_events']))
+            st.metric("🎯 Total Events", int(sport_info.get('num_events', 0)))
         
         with col5:
-            st.metric("📊 Disciplines", int(sport_info.get('num_disciplines', 0)))
+            num_disciplines_val = int(sport_info.get('num_disciplines', 0))
+            st.metric("📊 Disciplines", num_disciplines_val)
         
         # Detailed visualizations
         col_left, col_right = st.columns(2)
@@ -486,6 +513,7 @@ if deep_dive_sport:
             # Medal winners by country
             st.markdown("#### 🌍 Top Countries in " + deep_dive_sport)
             
+            # Filter medals by discipline (which is the sport name in this case)
             sport_medals = data['medals'][data['medals']['discipline'] == deep_dive_sport]
             country_medals = sport_medals.groupby('country').size().reset_index(name='medal_count')
             country_medals = country_medals.sort_values('medal_count', ascending=False).head(10)
@@ -510,6 +538,7 @@ if deep_dive_sport:
             # Gender distribution in sport
             st.markdown("#### ⚖️ Gender Distribution in " + deep_dive_sport)
             
+            # Use 'schedules' which contains the 'discipline' and 'gender' columns
             sport_schedules = data['schedules'][data['schedules']['discipline'] == deep_dive_sport]
             gender_dist = sport_schedules['gender'].value_counts().reset_index()
             gender_dist.columns = ['Gender', 'Count']
@@ -536,6 +565,7 @@ if deep_dive_sport:
         # Event list for this sport
         st.markdown("#### 📋 Events in " + deep_dive_sport)
         
+        # Use 'events' which contains the 'sport' column
         sport_events = data['events'][data['events']['sport'] == deep_dive_sport]
         
         if not sport_events.empty:
