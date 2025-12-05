@@ -1,0 +1,771 @@
+"""
+Page 3: Athlete Performance (The Human Story)
+==============================================
+Analyzes Olympic data from the perspective of athletes.
+
+Author: Your Name
+Date: December 2024
+"""
+
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+import numpy as np
+from pathlib import Path
+
+# Page configuration
+st.set_page_config(
+    page_title="Athlete Performance - Paris 2024",
+    page_icon="👤",
+    layout="wide"
+)
+
+# Define paths
+DATA_DIR = Path(__file__).parent.parent / 'data'
+
+# ============================================================================
+# DATA LOADING
+# ============================================================================
+
+@st.cache_data
+def load_data():
+    data_dir = DATA_DIR
+    import pandas as pd
+    try:
+        athletes = pd.read_csv(data_dir / 'athletes_enriched.csv')
+        # fallback si besoin
+        if 'name' not in athletes.columns:
+            athletes = pd.read_csv(data_dir / 'athletes_cleaned.csv')
+
+        medalists = pd.read_csv(data_dir / 'medalists_enriched.csv')
+        gender_dist = pd.read_csv(data_dir / 'gender_distribution.csv')
+        athlete_medals = pd.read_csv(data_dir / 'athlete_medals_summary.csv')
+
+        # ajout pour les coachs/équipes
+        teams = pd.read_csv(data_dir / 'teams_cleaned.csv')
+        coaches = pd.read_csv(data_dir / 'coaches_cleaned.csv')
+
+
+        # normaliser types des listes (teams_cleaned a des listes sous forme de chaînes)
+        for col in ['athletes_codes', 'coaches', 'coaches_codes']:
+            if col in teams.columns:
+                teams[col] = teams[col].apply(
+                    lambda x: eval(x) if isinstance(x, str) and x.startswith('[') else x
+                )
+
+        return {
+            'athletes': athletes,
+            'medalists': medalists,
+            'gender_dist': gender_dist,
+            'athlete_medals': athlete_medals,
+            'teams': teams,
+            'coaches': coaches
+        }
+    except Exception as e:
+        st.error(f"Error loading data: {e}")
+        st.stop()
+
+# Load data
+data = load_data()
+
+# ============================================================================
+# SIDEBAR FILTERS
+# ============================================================================
+
+st.sidebar.header("🔍 Athlete Filters")
+
+# Country filter
+countries = ['All'] + sorted(data['athletes']['country'].dropna().unique().tolist())
+selected_country = st.sidebar.selectbox(
+    "Select Country",
+    countries,
+    index=0,
+    key='country_filter'
+)
+
+# Sport filter
+sports = ['All'] + sorted(data['athletes']['disciplines'].dropna().unique().tolist())
+selected_sport = st.sidebar.selectbox(
+    "Select Sport/Discipline",
+    sports,
+    index=0,
+    key='sport_filter'
+)
+
+# Gender filter
+genders = ['All', 'Male', 'Female']
+selected_gender = st.sidebar.selectbox(
+    "Select Gender",
+    genders,
+    index=0,
+    key='gender_filter'
+)
+
+# Age range filter
+if data['athletes']['age'].notna().any():
+    min_age = int(data['athletes']['age'].min())
+    max_age = int(data['athletes']['age'].max())
+    age_range = st.sidebar.slider(
+        "Age Range",
+        min_value=min_age,
+        max_value=max_age,
+        value=(min_age, max_age),
+        key='age_filter'
+    )
+else:
+    age_range = (0, 100)
+
+st.sidebar.markdown("---")
+st.sidebar.info("💡 **Tip**: Use filters to explore specific countries or sports!")
+
+# ============================================================================
+# APPLY FILTERS
+# ============================================================================
+
+def apply_filters(df):
+    """Apply sidebar filters to dataframe"""
+    filtered_df = df.copy()
+    
+    if selected_country != 'All' and 'country' in filtered_df.columns:
+        filtered_df = filtered_df[filtered_df['country'] == selected_country]
+    
+    # Correction du filtre sport/disciplines pour gérer les listes ou chaînes multiples
+    if selected_sport != 'All' and 'disciplines' in filtered_df.columns:
+        # On considère que chaque cellule peut contenir plusieurs sports séparés par virgule ou autre
+        def sport_match(row):
+            val = row['disciplines']
+            if pd.isna(val):
+                return False
+            # Split par virgule, point-virgule, slash, etc.
+            sports_list = [s.strip() for s in str(val).replace(';', ',').replace('/', ',').split(',')]
+            return selected_sport in sports_list
+        filtered_df = filtered_df[filtered_df.apply(sport_match, axis=1)]
+    
+    if selected_gender != 'All' and 'gender' in filtered_df.columns:
+        filtered_df = filtered_df[filtered_df['gender'] == selected_gender]
+    
+    if 'age' in filtered_df.columns:
+        filtered_df = filtered_df[
+            (filtered_df['age'] >= age_range[0]) & 
+            (filtered_df['age'] <= age_range[1])
+        ]
+    
+    return filtered_df
+
+def get_coaches_for_athlete(athlete_row, data):
+    import pandas as pd
+
+    # 1) champs directs dans athletes_enriched
+    names = []
+    # all_coaches: liste ou texte avec noms séparés par commas
+    if 'all_coaches' in athlete_row and pd.notna(athlete_row['all_coaches']) and str(athlete_row['all_coaches']).strip() and str(athlete_row['all_coaches']).lower() != 'n/a':
+        raw = str(athlete_row['all_coaches'])
+        # essayer d'interpréter comme liste Python sinon split
+        try:
+            val = eval(raw) if raw.startswith('[') else raw
+            if isinstance(val, list):
+                names = [str(x).strip() for x in val if str(x).strip()]
+            else:
+                names = [s.strip() for s in raw.replace('<br>', ',').split(',') if s.strip()]
+        except Exception:
+            names = [s.strip() for s in raw.replace('<br>', ',').split(',') if s.strip()]
+
+    # coach: texte libre
+    if not names and 'coach' in athlete_row and pd.notna(athlete_row['coach']) and str(athlete_row['coach']).strip() and str(athlete_row['coach']).lower() != 'n/a':
+        raw = str(athlete_row['coach'])
+        parts = [p.strip() for p in raw.replace('<br>', ',').split(',') if p.strip()]
+        names = parts
+
+    # 2) via teams_cleaned: chercher les teams où l'athlète appartient
+    if not names and 'teams' in data and 'code' in athlete_row:
+        athlete_code = str(athlete_row['code'])
+        teams_df = data['teams']
+        hit = teams_df[teams_df['athletes_codes'].apply(lambda lst: isinstance(lst, list) and athlete_code in lst)]
+        if not hit.empty:
+            # préférer noms directs si présents
+            if 'coaches' in hit.columns and hit['coaches'].notna().any():
+                for lst in hit['coaches']:
+                    if isinstance(lst, list):
+                        names.extend([str(x).strip() for x in lst if str(x).strip()])
+            # sinon, utiliser coaches_codes pour mapper via coaches_cleaned
+            elif 'coaches_codes' in hit.columns and 'coaches' in data:
+                coach_codes = []
+                for lst in hit['coaches_codes']:
+                    if isinstance(lst, list):
+                        coach_codes.extend([str(x) for x in lst])
+                if coach_codes:
+                    coaches_df = data['coaches']
+                    # essayer colonnes usuelles: code, name
+                    code_col = 'code' if 'code' in coaches_df.columns else None
+                    name_col = 'name' if 'name' in coaches_df.columns else None
+                    if code_col and name_col:
+                        mapped = coaches_df[coaches_df[code_col].astype(str).isin(coach_codes)][name_col].tolist()
+                        names.extend([str(x).strip() for x in mapped if str(x).strip()])
+
+    # nettoyer doublons, garder ordre
+    seen = set()
+    cleaned = []
+    for n in names:
+        if n not in seen:
+            cleaned.append(n)
+            seen.add(n)
+
+    return cleaned
+# ============================================================================
+# PAGE HEADER
+# ============================================================================
+
+st.title("👤 Athlete Performance: The Human Story")
+st.info("📸 Athlete photos are retrieved from Wikipedia automatically when available.")
+
+
+# ============================================================================
+# SECTION 1: ATHLETE DETAILED PROFILE CARD
+# ============================================================================
+
+st.header("🔍 Athlete Profile Search")
+st.markdown("**Search and explore detailed athlete information**")
+
+search_col1, search_col2 = st.columns([3, 1])
+
+# Utiliser les athlètes filtrés pour la liste déroulante
+filtered_athletes_for_profile = apply_filters(data['athletes'])
+
+with search_col1:
+    athlete_names = sorted(filtered_athletes_for_profile['name'].dropna().unique().tolist())
+    selected_athlete = st.selectbox(
+        "Search for an athlete by name",
+        options=[''] + athlete_names,
+        format_func=lambda x: "-- Select an athlete --" if x == '' else x,
+        key='athlete_search'
+    )
+
+with search_col2:
+    st.markdown("###")
+    search_button = st.button("🔎 Search", use_container_width=True)
+
+if selected_athlete and selected_athlete != '':
+    athlete_data = filtered_athletes_for_profile[filtered_athletes_for_profile['name'] == selected_athlete].iloc[0]
+    
+    st.markdown("---")
+    st.subheader(f"📋 Profile: {athlete_data['name']}")
+    
+    col1, col2, col3, col4 = st.columns([1, 2, 2, 2])
+    
+    with col1:
+        # Correction affichage image : forcer string et vérifier si l'URL est valide
+        image_url = str(athlete_data.get('image_url', '')).strip()
+        if image_url and image_url.startswith('http'):
+            try:
+                st.markdown(
+                    f"""
+                    <div style='margin-bottom: 20px; text-align: center;'>
+                        <img src="{image_url}" width="180" style="border-radius:10px; margin-bottom:10px;" />
+                        <div style='font-size:13px; color:gray;'>Official photo</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+            except Exception:
+                st.markdown("""
+                <div style='text-align: center; padding: 20px; background-color: #f0f2f6; border-radius: 10px; margin-bottom:20px;'>
+                    <div style='font-size: 80px;'>👤</div>
+                    <p style='font-size: 12px; color: gray;'>Image not available</p>
+                </div>
+                """, unsafe_allow_html=True)
+        else:
+            st.markdown("""
+            <div style='text-align: center; padding: 20px; background-color: #f0f2f6; border-radius: 10px; margin-bottom:20px;'>
+                <div style='font-size: 80px;'>👤</div>
+                <p style='font-size: 12px; color: gray;'>No Image Available</p>
+            </div>
+            """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown("#### 🏳️ Basic Information")
+        st.markdown(f"**Full Name:** {athlete_data['name']}")
+        st.markdown(f"**Country:** {athlete_data['country']} ({athlete_data['country_code']})")
+        st.markdown(f"**Gender:** {'👨' if athlete_data['gender'] == 'Male' else '👩'} {athlete_data['gender']}")
+        
+        age_display = f"{int(athlete_data['age'])}" if pd.notna(athlete_data['age']) else "N/A"
+        st.markdown(f"**Age:** {age_display} years")
+    
+    with col3:
+        st.markdown("#### 📊 Physical Stats")
+        height_display = f"{athlete_data['height']:.0f} cm" if pd.notna(athlete_data['height']) else "N/A"
+        weight_display = f"{athlete_data['weight']:.0f} kg" if pd.notna(athlete_data['weight']) else "N/A"
+        st.markdown(f"**Height:** {height_display}")
+        st.markdown(f"**Weight:** {weight_display}")
+    
+    with col4:
+        st.markdown("#### 🏅 Sports & Team")
+        sports_display = athlete_data['disciplines'] if pd.notna(athlete_data.get('disciplines')) else "N/A"
+        st.markdown(f"**Sport(s):** {sports_display}")
+       
+        # Coach(s)
+        coaches_list = get_coaches_for_athlete(athlete_data, data)
+        if coaches_list:
+            st.markdown(f"**Coach(s):** {', '.join(coaches_list)}")
+        else:
+            st.markdown("**Coach(s):** N/A")
+    
+athlete_medals = data['medalists'][data['medalists']['name'] == selected_athlete]
+if not athlete_medals.empty:
+    st.markdown("#### 🏆 Medal Achievements")
+    
+    # Récupérer les medals depuis athlete_medals_summary pour avoir les bons totaux
+    athlete_summary = data['athlete_medals'][data['athlete_medals']['name'] == selected_athlete]
+    
+    if not athlete_summary.empty:
+        # Utiliser les données agrégées de athlete_medals_summary
+        athlete_row = athlete_summary.iloc[0]
+        gold = int(athlete_row['Gold Medal']) if pd.notna(athlete_row['Gold Medal']) else 0
+        silver = int(athlete_row['Silver Medal']) if pd.notna(athlete_row['Silver Medal']) else 0
+        bronze = int(athlete_row['Bronze Medal']) if pd.notna(athlete_row['Bronze Medal']) else 0
+        total = int(athlete_row['total_medals']) if pd.notna(athlete_row['total_medals']) else 0
+    else:
+        # Fallback: compter depuis medalists si pas dans le summary
+        gold = len(athlete_medals[athlete_medals['medal_type'] == 'Gold Medal'])
+        silver = len(athlete_medals[athlete_medals['medal_type'] == 'Silver Medal'])
+        bronze = len(athlete_medals[athlete_medals['medal_type'] == 'Bronze Medal'])
+        total = len(athlete_medals)
+    
+    colg, cols, colb, colt = st.columns(4)
+    colg.metric("🥇 Gold", gold)
+    cols.metric("🥈 Silver", silver)
+    colb.metric("🥉 Bronze", bronze)
+    colt.metric("📊 Total", total)
+else:
+    st.info("ℹ️ This athlete did not win any medals at Paris 2024.")
+
+st.markdown("---")
+
+# ============================================================================
+# SECTION 2: ATHLETE AGE DISTRIBUTION
+# ============================================================================
+
+st.header("📊 Athlete Age Distribution")
+st.markdown("**Analyze age patterns across sports and genders**")
+
+# Utiliser les athlètes filtrés
+filtered_athletes = apply_filters(data['athletes'])
+
+# Remove rows with missing age
+filtered_athletes_with_age = filtered_athletes[filtered_athletes['age'].notna()]
+
+if len(filtered_athletes_with_age) > 0:
+    # Create tabs for different views
+    tab1, tab2 = st.tabs(["📦 Box Plot", "🎻 Violin Plot"])
+    
+    with tab1:
+        # Box plot by gender and sport
+        view_option = st.radio(
+            "View age distribution by:",
+            ["Gender", "Sport/Discipline"],
+            horizontal=True,
+            key='age_view_box'
+        )
+        
+        if view_option == "Gender":
+            fig_age_box = px.box(
+                filtered_athletes_with_age,
+                x='gender',
+                y='age',
+                color='gender',
+                title='Age Distribution by Gender',
+                labels={'age': 'Age (years)', 'gender': 'Gender'},
+                color_discrete_map={'Male': '#3498db', 'Female': '#e74c3c'},
+                points='outliers',
+                height=500
+            )
+        else:
+            # Get top sports by athlete count
+            top_sports = filtered_athletes_with_age['disciplines'].value_counts().head(15).index
+            sports_data = filtered_athletes_with_age[filtered_athletes_with_age['disciplines'].isin(top_sports)]
+            
+            fig_age_box = px.box(
+                sports_data,
+                x='disciplines',
+                y='age',
+                color='disciplines',
+                title='Age Distribution by Sport (Top 15)',
+                labels={'age': 'Age (years)', 'disciplines': 'Sport'},
+                points='outliers',
+                height=500
+            )
+            fig_age_box.update_xaxes(tickangle=-45)
+        
+        fig_age_box.update_layout(showlegend=False)
+        st.plotly_chart(fig_age_box, use_container_width=True)
+    
+    with tab2:
+        # Violin plot
+        view_option_violin = st.radio(
+            "View age distribution by:",
+            ["Gender", "Sport/Discipline"],
+            horizontal=True,
+            key='age_view_violin'
+        )
+        
+        if view_option_violin == "Gender":
+            fig_age_violin = px.violin(
+                filtered_athletes_with_age,
+                x='gender',
+                y='age',
+                color='gender',
+                title='Age Distribution by Gender (Violin Plot)',
+                labels={'age': 'Age (years)', 'gender': 'Gender'},
+                color_discrete_map={'Male': '#3498db', 'Female': '#e74c3c'},
+                box=True,
+                points='outliers',
+                height=500
+            )
+        else:
+            # Get top sports
+            top_sports = filtered_athletes_with_age['disciplines'].value_counts().head(10).index
+            sports_data = filtered_athletes_with_age[filtered_athletes_with_age['disciplines'].isin(top_sports)]
+            
+            fig_age_violin = px.violin(
+                sports_data,
+                x='disciplines',
+                y='age',
+                color='disciplines',
+                title='Age Distribution by Sport (Top 10)',
+                labels={'age': 'Age (years)', 'disciplines': 'Sport'},
+                box=True,
+                points='outliers',
+                height=500
+            )
+            fig_age_violin.update_xaxes(tickangle=-45)
+        
+        fig_age_violin.update_layout(showlegend=False)
+        st.plotly_chart(fig_age_violin, use_container_width=True)
+    
+    # Age statistics
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric("👶 Youngest Athlete", f"{int(filtered_athletes_with_age['age'].min())} years")
+    with col2:
+        st.metric("👴 Oldest Athlete", f"{int(filtered_athletes_with_age['age'].max())} years")
+    with col3:
+        st.metric("📊 Average Age", f"{filtered_athletes_with_age['age'].mean():.1f} years")
+    with col4:
+        st.metric("📍 Median Age", f"{filtered_athletes_with_age['age'].median():.1f} years")
+else:
+    st.warning("⚠️ No athlete data available with the current filters.")
+
+st.markdown("---")
+
+# ============================================================================
+# SECTION 3: GENDER DISTRIBUTION (CODE CORRIGÉ)
+# ============================================================================
+
+st.header("⚖️ Gender Distribution Analysis")
+st.markdown("**Explore gender balance across continents, countries, and sports**")
+
+# 1. Obtenir les données détaillées des athlètes après application de TOUS les filtres
+# (y compris Country, Sport, Age)
+filtered_athletes_for_gender = apply_filters(data['athletes'])
+
+# Filter options
+gender_view = st.selectbox(
+    "Select View Level:",
+    ["Overall", "By Continent", "By Country (Top 30)", "By Sport"],
+    key='gender_view'
+)
+
+# 2. Remplacer toute la logique 'if gender_view == "Overall": gender_data = ...'
+#    par cette nouvelle logique de regroupement:
+
+if gender_view == "Overall":
+    # Regroupement simple par genre
+    gender_data_raw = filtered_athletes_for_gender.groupby('gender').size().reset_index(name='count')
+    gender_data_raw['subcategory'] = 'Overall'
+
+elif gender_view == "By Continent":
+    # Regroupement par Continent et Genre
+    if 'continent' in filtered_athletes_for_gender.columns:
+        gender_data_raw = filtered_athletes_for_gender.groupby(['continent', 'gender']).size().reset_index(name='count')
+        gender_data_raw = gender_data_raw.rename(columns={'continent': 'subcategory'})
+    else:
+        st.warning("⚠️ La colonne 'continent' est manquante pour cette vue.")
+        gender_data_raw = pd.DataFrame()
+
+elif gender_view == "By Country (Top 30)":
+    # Regroupement par Pays et Genre
+    gender_data_raw = filtered_athletes_for_gender.groupby(['country', 'gender']).size().reset_index(name='count')
+    gender_data_raw = gender_data_raw.rename(columns={'country': 'subcategory'})
+    
+    # Appliquer le filtre Country (si nécessaire) et garder les 30 plus grands groupes
+    if selected_country != 'All':
+        gender_data_raw = gender_data_raw[gender_data_raw['subcategory'] == selected_country]
+    
+    # Obtenir les 30 pays avec le plus d'athlètes (après filtrage)
+    top_countries = gender_data_raw.groupby('subcategory')['count'].sum().nlargest(30).index
+    gender_data_raw = gender_data_raw[gender_data_raw['subcategory'].isin(top_countries)]
+
+else:  # By Sport
+    # Regroupement par Discipline et Genre
+    gender_data_raw = filtered_athletes_for_gender.groupby(['disciplines', 'gender']).size().reset_index(name='count')
+    gender_data_raw = gender_data_raw.rename(columns={'disciplines': 'subcategory'})
+    
+    # Obtenir les 15 sports avec le plus d'athlètes (après filtrage)
+    top_sports_by_count = gender_data_raw.groupby('subcategory')['count'].sum().nlargest(15).index
+    gender_data_raw = gender_data_raw[gender_data_raw['subcategory'].isin(top_sports_by_count)]
+
+# 3. Calculer le pourcentage pour le Bar Chart (requis pour la colonne 'percentage')
+if not gender_data_raw.empty:
+    gender_data_raw['total_per_sub'] = gender_data_raw.groupby('subcategory')['count'].transform('sum')
+    gender_data_raw['percentage'] = (gender_data_raw['count'] / gender_data_raw['total_per_sub']) * 100
+    gender_data = gender_data_raw[gender_data_raw['count'] > 0]
+else:
+    gender_data = pd.DataFrame()
+
+# 4. Visualisation (inchangée, mais utilise le nouveau gender_data)
+if len(gender_data) > 0:
+    # Create visualization tabs
+    tab1, tab2 = st.tabs(["🥧 Pie Chart", "📊 Bar Chart"])
+    
+    with tab1:
+        if gender_view == "Overall":
+            # Simple pie chart for overall
+            fig_gender_pie = px.pie(
+                gender_data,
+                values='count',
+                names='gender',
+                title='Overall Gender Distribution',
+                color='gender',
+                color_discrete_map={'Male': '#3498db', 'Female': '#e74c3c', 'Unknown': '#95a5a6'},
+                height=500
+            )
+            fig_gender_pie.update_traces(textposition='inside', textinfo='percent+label')
+            st.plotly_chart(fig_gender_pie, use_container_width=True)
+        else:
+            # Sunburst for hierarchical view
+            fig_gender_sunburst = px.sunburst(
+                gender_data,
+                path=['subcategory', 'gender'],
+                values='count',
+                color='gender',
+                color_discrete_map={'Male': '#3498db', 'Female': '#e74c3c', 'Unknown': '#95a5a6'},
+                title=f'Gender Distribution - {gender_view}',
+                height=600
+            )
+            st.plotly_chart(fig_gender_sunburst, use_container_width=True)
+    
+    with tab2:
+        # Stacked bar chart
+        if gender_view != "Overall":
+            fig_gender_bar = px.bar(
+                gender_data,
+                x='subcategory',
+                y='percentage',
+                color='gender',
+                title=f'Gender Distribution (%) - {gender_view}',
+                labels={'subcategory': gender_view.replace('By ', ''), 'percentage': 'Percentage (%)'},
+                color_discrete_map={'Male': '#3498db', 'Female': '#e74c3c', 'Unknown': '#95a5a6'},
+                text='percentage',
+                height=500,
+                barmode='stack'
+            )
+            fig_gender_bar.update_traces(texttemplate='%{text:.1f}%', textposition='inside')
+            fig_gender_bar.update_xaxes(tickangle=-45)
+            st.plotly_chart(fig_gender_bar, use_container_width=True)
+        else:
+            # Simple bar for overall
+            fig_gender_bar = px.bar(
+                gender_data,
+                x='gender',
+                y='count',
+                color='gender',
+                title='Overall Gender Distribution',
+                labels={'gender': 'Gender', 'count': 'Number of Athletes'},
+                color_discrete_map={'Male': '#3498db', 'Female': '#e74c3c', 'Unknown': '#95a5a6'},
+                text='count',
+                height=500
+            )
+            fig_gender_bar.update_traces(textposition='outside')
+            st.plotly_chart(fig_gender_bar, use_container_width=True)
+    
+    # Gender statistics
+    total_count = gender_data['count'].sum()
+    male_count = gender_data[gender_data['gender'] == 'Male']['count'].sum()
+    female_count = gender_data[gender_data['gender'] == 'Female']['count'].sum()
+    
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric("👥 Total Athletes", int(total_count))
+    with col2:
+        st.metric("👨 Male Athletes", int(male_count))
+    with col3:
+        st.metric("👩 Female Athletes", int(female_count))
+    with col4:
+        gender_ratio = (female_count / male_count * 100) if male_count > 0 else 0
+        st.metric("⚖️ Female/Male Ratio", f"{gender_ratio:.1f}%")
+else:
+    st.warning("⚠️ No gender distribution data available for the current selection.")
+
+st.markdown("---")
+
+# ============================================================================
+# SECTION 4: TOP ATHLETES BY MEDALS
+# ============================================================================
+
+st.header("🏆 Top Athletes by Medals")
+st.markdown("**Celebrating the champions of Paris 2024**")
+
+top_n = st.slider("Number of top athletes to display:", 5, 30, 10, key='top_athletes_slider')
+
+# Utiliser les athlètes filtrés pour les stats bonus
+filtered_athletes = apply_filters(data['athletes'])
+
+# Appliquer les mêmes filtres sur le DataFrame des médailles
+filtered_medal_athletes = data['athlete_medals'].copy()
+
+if selected_country != 'All':
+    filtered_medal_athletes = filtered_medal_athletes[filtered_medal_athletes['country'] == selected_country]
+
+# Correction pour le filtre sport/disciplines sur les médaillés
+if selected_sport != 'All' and 'disciplines' in filtered_medal_athletes.columns:
+    def sport_match(row):
+        val = row['disciplines']
+        if pd.isna(val):
+            return False
+        sports_list = [s.strip() for s in str(val).replace(';', ',').replace('/', ',').split(',')]
+        return selected_sport in sports_list
+    filtered_medal_athletes = filtered_medal_athletes[filtered_medal_athletes.apply(sport_match, axis=1)]
+
+if selected_gender != 'All':
+    filtered_medal_athletes = filtered_medal_athletes[filtered_medal_athletes['gender'] == selected_gender]
+
+# Get top N athletes
+top_athletes = filtered_medal_athletes.head(top_n)
+
+if len(top_athletes) > 0:
+    # Create stacked bar chart
+    top_athletes_melted = top_athletes.melt(
+        id_vars=['name', 'country', 'rank'],
+        value_vars=['Gold Medal', 'Silver Medal', 'Bronze Medal'],
+        var_name='Medal Type',
+        value_name='Count'
+    )
+    
+    fig_top_athletes = px.bar(
+        top_athletes_melted,
+        x='name',
+        y='Count',
+        color='Medal Type',
+        title=f'Top {top_n} Athletes by Medal Count',
+        labels={'name': 'Athlete', 'Count': 'Number of Medals'},
+        color_discrete_map={
+            'Gold': '#FFE766',
+            'Silver': '#C0C0C0',
+            'Bronze': '#d99d73'
+        },
+        text='Count',
+        height=600,
+        hover_data=['country']
+    )
+    
+    fig_top_athletes.update_traces(textposition='inside')
+    fig_top_athletes.update_xaxes(tickangle=-45)
+    fig_top_athletes.update_layout(barmode='stack', xaxis={'categoryorder': 'total descending'})
+    
+    st.plotly_chart(fig_top_athletes, use_container_width=True)
+    
+    # Detailed table
+    st.subheader(f"📋 Top {top_n} Athletes - Detailed View")
+    
+    display_cols = ['rank', 'name', 'country', 'gender', 'Gold Medal', 'Silver Medal', 'Bronze Medal', 'total_medals', 'disciplines']
+    display_df = top_athletes[display_cols].copy()
+    display_df.columns = ['Rank', 'Name', 'Country', 'Gender', '🥇 Gold', '🥈 Silver', '🥉 Bronze', '📊 Total', 'Sport(s)']
+    
+    st.dataframe(
+        display_df,
+        use_container_width=True,
+        hide_index=True,
+        height=400
+    )
+    
+    # Champion spotlight
+    st.markdown("---")
+    st.subheader("🌟 Champion Spotlight")
+    
+    champion = top_athletes.iloc[0]
+    
+    spotlight_col1, spotlight_col2, spotlight_col3 = st.columns([1, 2, 2])
+    
+    with spotlight_col1:
+        st.markdown("""
+        <div style='text-align: center; padding: 20px; background-color: #FFE766; border-radius: 10px;'>
+            <div style='font-size: 80px;'>🏆</div>
+            <p style='font-size: 14px; font-weight: bold;'>TOP MEDALIST</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with spotlight_col2:
+        st.markdown(f"### {champion['name']}")
+        st.markdown(f"**Country:** {champion['country']}")
+        st.markdown(f"**Gender:** {champion['gender']}")
+        st.markdown(f"**Sport(s):** {champion['disciplines']}")
+    
+    with spotlight_col3:
+        st.metric("🥇 Gold Medals", int(champion['Gold Medal']))
+        st.metric("🥈 Silver Medals", int(champion['Silver Medal']))
+        st.metric("🥉 Bronze Medals", int(champion['Bronze Medal']))
+        st.metric("📊 Total Medals", int(champion['total_medals']))
+else:
+    st.warning("⚠️ No medal data available for the current filters.")
+
+st.markdown("---")
+
+# ============================================================================
+# BONUS: ATHLETE STATISTICS DASHBOARD
+# ============================================================================
+
+st.header("📈 Athlete Statistics Dashboard")
+st.markdown("**Quick insights about the athlete population**")
+
+# Utiliser les athlètes filtrés
+filtered_athletes = apply_filters(data['athletes'])
+
+stat_col1, stat_col2, stat_col3, stat_col4, stat_col5 = st.columns(5)
+
+with stat_col1:
+    st.metric("👥 Total Athletes", len(filtered_athletes))
+
+with stat_col2:
+    num_countries = filtered_athletes['country'].nunique()
+    st.metric("🌍 Countries Represented", num_countries)
+
+with stat_col3:
+    # Correction pour compter les sports uniques dans toutes les disciplines
+    all_sports = set()
+    for val in filtered_athletes['disciplines'].dropna():
+        for s in str(val).replace(';', ',').replace('/', ',').split(','):
+            all_sports.add(s.strip())
+    num_sports = len([s for s in all_sports if s])
+    st.metric("🏅 Sports/Disciplines", num_sports)
+
+with stat_col4:
+    avg_height = filtered_athletes['height'].mean()
+    height_display = f"{avg_height:.0f} cm" if pd.notna(avg_height) else "N/A"
+    st.metric("📏 Avg Height", height_display)
+
+with stat_col5:
+    avg_weight = filtered_athletes['weight'].mean()
+    weight_display = f"{avg_weight:.0f} kg" if pd.notna(avg_weight) else "N/A"
+    st.metric("⚖️ Avg Weight", weight_display)
+
+st.markdown("---")
+
+# ============================================================================
+# FOOTER
+# ============================================================================
+
+st.markdown("""
+<div style='text-align: center; color: gray; padding: 20px;'>
+    <p>Paris 2024 Olympics Dashboard | Page 3: Athlete Performance 👤</p>
+    <p>Data Source: Paris 2024 Olympics Official Dataset</p>
+</div>
+""", unsafe_allow_html=True)

@@ -1,0 +1,180 @@
+gender,count,category,subcategory,total_in_category,percentage
+Male,5658,Overall,All,11113,50.91
+Female,5455,Overall,All,11113,49.09
+Female,441,Continent,Africa,1011,43.62
+Male,570,Continent,Africa,1011,56.38
+Female,900,Continent,Asia,1809,49.75
+Male,909,Continent,Asia,1809,50.25
+Female,2526,Continent,Europe,5125,49.29
+Male,2599,Continent,Europe,5125,50.71
+Female,761,Continent,North America,1436,52.99
+Male,675,Continent,North America,1436,47.01
+Female,413,Continent,Oceania,790,52.28
+Male,377,Continent,Oceania,790,47.72
+Female,337,Continent,South America,736,45.79
+Male,399,Continent,South America,736,54.21
+Female,77,Continent,Unknown,206,37.38
+Male,129,Continent,Unknown,206,62.62
+Female,33,Country,Argentina,143,23.08
+Male,110,Country,Argentina,143,76.92
+Female,265,Country,Australia,475,55.79
+Male,210,Country,Australia,475,44.21
+Female,88,Country,Belgium,177,49.72
+Male,89,Country,Belgium,177,50.28
+Female,164,Country,Brazil,290,56.55
+Male,126,Country,Brazil,290,43.45
+Female,203,Country,Canada,332,61.14
+Male,129,Country,Canada,332,38.86
+Female,264,Country,China,398,66.33
+Male,134,Country,China,398,33.67
+Female,49,Country,Czechia,111,44.14
+Male,62,Country,Czechia,111,55.86
+Female,74,Country,Denmark,131,56.49
+Male,57,Country,Denmark,131,43.51
+Female,54,Country,Egypt,157,34.39
+Male,103,Country,Egypt,157,65.61
+Female,295,Country,France,601,49.08
+Male,306,Country,France,601,50.92
+Female,225,Country,Germany,457,49.23
+Male,232,Country,Germany,457,50.77
+Female,178,Country,Great Britain,343,51.9
+Male,165,Country,Great Britain,343,48.1
+Female,85,Country,Hungary,177,48.02
+Male,92,Country,Hungary,177,51.98
+Female,46,Country,India,112,41.07
+Male,66,Country,India,112,58.93
+Female,69,Country,Ireland,143,48.25
+Male,74,Country,Ireland,143,51.75
+Female,192,Country,Italy,397,48.36
+Male,205,Country,Italy,397,51.64
+Female,201,Country,Japan,431,46.64
+Male,230,Country,Japan,431,53.36
+Female,81,Country,Korea,147,55.1
+Male,66,Country,Korea,147,44.9
+Female,63,Country,Mexico,108,58.33
+Male,45,Country,Mexico,108,41.67
+Female,172,Country,Netherlands,290,59.31
+Male,118,Country,Netherlands,290,40.69
+Female,101,Country,New Zealand,208,48.56
+Male,107,Country,New Zealand,208,51.44
+Female,53,Country,Norway,109,48.62
+Male,56,Country,Norway,109,51.38
+Female,124,Country,Poland,226,54.87
+Male,102,Country,Poland,226,45.13
+Female,44,Country,Serbia,114,38.6
+Male,70,Country,Serbia,114,61.4
+Female,63,Country,South Africa,141,44.68
+Male,78,Country,South Africa,141,55.32
+Female,202,Country,Spain,401,50.37
+Male,199,Country,Spain,401,49.63
+Female,66,Country,Sweden,125,52.8
+Male,59,Country,Sweden,125,47.2
+Female,66,Country,Switzerland,137,48.18
+Male,71,Country,Switzerland,137,51.82
+Female,69,Country,Ukraine,141,48.94
+Male,72,Country,Ukraine,141,51.06
+Female,328,Country,United States,619,52.99
+Male,291,Country,United States,619,47.01
+Female,1,Sport,'Basketball'],1,100.0
+Female,1,Sport,'Cycling Mountain Bike'],2,50.0
+Male,1,Sport,'Cycling Mountain Bike'],2,50.0
+Female,8,Sport,'Cycling Track'],11,72.73
+Male,3,Sport,'Cycling Track'],11,27.27
+Female,4,Sport,'Swimming'],17,23.53
+Male,13,Sport,'Swimming'],17,76.47
+Female,1,Sport,'Triathlon'],1,100.0
+Female,1,Sport,['3x3 Basketball',1,100.0
+Female,32,Sport,['3x3 Basketball'],64,50.0
+Male,32,Sport,['3x3 Basketball'],64,50.0
+Female,64,Sport,['Archery'],128,50.0
+Male,64,Sport,['Archery'],128,50.0
+Female,94,Sport,['Artistic Gymnastics'],190,49.47
+Male,96,Sport,['Artistic Gymnastics'],190,50.53
+Female,106,Sport,['Artistic Swimming'],106,100.0
+Female,982,Sport,['Athletics'],2018,48.66
+Male,1036,Sport,['Athletics'],2018,51.34
+Female,87,Sport,['Badminton'],175,49.71
+Male,88,Sport,['Badminton'],175,50.29
+Female,143,Sport,['Basketball'],287,49.83
+Male,144,Sport,['Basketball'],287,50.17
+Female,48,Sport,['Beach Volleyball'],96,50.0
+Male,48,Sport,['Beach Volleyball'],96,50.0
+Female,124,Sport,['Boxing'],248,50.0
+Male,124,Sport,['Boxing'],248,50.0
+Female,17,Sport,['Breaking'],33,51.52
+Male,16,Sport,['Breaking'],33,48.48
+Female,41,Sport,['Canoe Slalom'],84,48.81
+Male,43,Sport,['Canoe Slalom'],84,51.19
+Female,120,Sport,['Canoe Sprint'],239,50.21
+Male,119,Sport,['Canoe Sprint'],239,49.79
+Female,12,Sport,['Cycling BMX Freestyle'],24,50.0
+Male,12,Sport,['Cycling BMX Freestyle'],24,50.0
+Female,33,Sport,['Cycling BMX Racing'],67,49.25
+Male,34,Sport,['Cycling BMX Racing'],67,50.75
+Female,33,Sport,['Cycling Mountain Bike'],68,48.53
+Male,35,Sport,['Cycling Mountain Bike'],68,51.47
+Female,10,Sport,['Cycling Road',14,71.43
+Male,4,Sport,['Cycling Road',14,28.57
+Female,84,Sport,['Cycling Road'],174,48.28
+Male,90,Sport,['Cycling Road'],174,51.72
+Female,110,Sport,['Cycling Track'],224,49.11
+Male,114,Sport,['Cycling Track'],224,50.89
+Female,68,Sport,['Diving'],135,50.37
+Male,67,Sport,['Diving'],135,49.63
+Female,93,Sport,['Equestrian'],242,38.43
+Male,149,Sport,['Equestrian'],242,61.57
+Female,130,Sport,['Fencing'],260,50.0
+Male,130,Sport,['Fencing'],260,50.0
+Female,240,Sport,['Football'],553,43.4
+Male,313,Sport,['Football'],553,56.6
+Female,60,Sport,['Golf'],120,50.0
+Male,60,Sport,['Golf'],120,50.0
+Female,202,Sport,['Handball'],386,52.33
+Male,184,Sport,['Handball'],386,47.67
+Female,203,Sport,['Hockey'],415,48.92
+Male,212,Sport,['Hockey'],415,51.08
+Female,186,Sport,['Judo'],378,49.21
+Male,192,Sport,['Judo'],378,50.79
+Female,4,Sport,['Marathon Swimming',17,23.53
+Male,13,Sport,['Marathon Swimming',17,76.47
+Female,20,Sport,['Marathon Swimming'],38,52.63
+Male,18,Sport,['Marathon Swimming'],38,47.37
+Female,36,Sport,['Modern Pentathlon'],72,50.0
+Male,36,Sport,['Modern Pentathlon'],72,50.0
+Female,94,Sport,['Rhythmic Gymnastics'],94,100.0
+Female,244,Sport,['Rowing'],493,49.49
+Male,249,Sport,['Rowing'],493,50.51
+Female,158,Sport,['Rugby Sevens'],317,49.84
+Male,159,Sport,['Rugby Sevens'],317,50.16
+Female,165,Sport,['Sailing'],330,50.0
+Male,165,Sport,['Sailing'],330,50.0
+Female,171,Sport,['Shooting'],342,50.0
+Male,171,Sport,['Shooting'],342,50.0
+Female,44,Sport,['Skateboarding'],88,50.0
+Male,44,Sport,['Skateboarding'],88,50.0
+Female,34,Sport,['Sport Climbing'],68,50.0
+Male,34,Sport,['Sport Climbing'],68,50.0
+Female,24,Sport,['Surfing'],48,50.0
+Male,24,Sport,['Surfing'],48,50.0
+Female,386,Sport,['Swimming'],836,46.17
+Male,450,Sport,['Swimming'],836,53.83
+Female,88,Sport,['Table Tennis'],175,50.29
+Male,87,Sport,['Table Tennis'],175,49.71
+Female,65,Sport,['Taekwondo'],134,48.51
+Male,69,Sport,['Taekwondo'],134,51.49
+Female,87,Sport,['Tennis'],176,49.43
+Male,89,Sport,['Tennis'],176,50.57
+Female,16,Sport,['Trampoline Gymnastics'],32,50.0
+Male,16,Sport,['Trampoline Gymnastics'],32,50.0
+Female,54,Sport,['Triathlon'],111,48.65
+Male,57,Sport,['Triathlon'],111,51.35
+Female,155,Sport,['Volleyball'],311,49.84
+Male,156,Sport,['Volleyball'],311,50.16
+Female,130,Sport,['Water Polo'],286,45.45
+Male,156,Sport,['Water Polo'],286,54.55
+Female,61,Sport,['Weightlifting'],122,50.0
+Male,61,Sport,['Weightlifting'],122,50.0
+Female,96,Sport,['Wrestling'],291,32.99
+Male,195,Sport,['Wrestling'],291,67.01
+Male,2,Sport,[Athletics],2,100.0
+Male,1,Sport,[Equestrian],1,100.0

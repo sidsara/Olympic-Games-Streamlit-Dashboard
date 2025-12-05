@@ -1,0 +1,15 @@
+[theme]
+# Couleur principale : Un bleu clair pour les éléments interactifs et les icônes.
+primaryColor="#4a90e2"
+
+# Couleur de fond principal : Un gris clair pour un mode clair agréable.
+backgroundColor="#f5f5f5"
+
+# Couleur de fond secondaire : Un gris légèrement plus foncé pour la barre latérale.
+secondaryBackgroundColor="#b3e5fc"
+
+# Couleur du texte : Noir pour une meilleure lisibilité.
+textColor="#333333"
+
+# Police d'écriture (Optionnel)
+font="sans serif"
