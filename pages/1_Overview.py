@@ -126,6 +126,9 @@ st.sidebar.info("💡 **Tip:** Use filters to explore specific countries, contin
 # ============================================================================
 # APPLY FILTERS
 # ============================================================================
+# ============================================================================
+# APPLY FILTERS
+# ============================================================================
 def apply_filters(df, filter_type='medals_total'):
     """Apply global filters to dataframe"""
     filtered_df = df.copy()
@@ -160,21 +163,110 @@ def apply_filters(df, filter_type='medals_total'):
     if filter_type == 'medals' and 'medal_type' in filtered_df.columns:
         medal_types = []
         if show_gold:
-            medal_types.append('Gold')
+            medal_types.append('Gold Medal')  # Correction ici !
         if show_silver:
-            medal_types.append('Silver')
+            medal_types.append('Silver Medal')  # Correction ici !
         if show_bronze:
-            medal_types.append('Bronze')
+            medal_types.append('Bronze Medal')  # Correction ici !
         
         if medal_types:
             filtered_df = filtered_df[filtered_df['medal_type'].isin(medal_types)]
     
     return filtered_df
 
+
+def get_filtered_medals_total():
+    """
+    Recalculate medals_total from medals_enriched with sport filter applied
+    """
+    # Start with medals_enriched which has sport/discipline info
+    filtered_medals = apply_filters(data['medals'], 'medals')
+    
+    # Si aucun filtre sport, utiliser medals_total_enriched directement
+    if not selected_sports:
+        filtered_medals_total = apply_filters(data['medals_total'], 'medals_total')
+        return filtered_medals_total
+    
+    # Sinon, recalculer les totaux à partir des médailles filtrées
+    if len(filtered_medals) == 0:
+        # Retourner un DataFrame vide avec les bonnes colonnes
+        return pd.DataFrame(columns=data['medals_total'].columns)
+    
+    # Grouper par pays et compter les médailles
+    medal_counts = filtered_medals.groupby(['country_code', 'country', 'country_long', 'continent', 'medal_type']).size().reset_index(name='count')
+    
+    # Pivoter pour avoir Gold Medal, Silver Medal, Bronze Medal en colonnes
+    medal_pivot = medal_counts.pivot_table(
+        index=['country_code', 'country', 'country_long', 'continent'],
+        columns='medal_type',
+        values='count',
+        fill_value=0
+    ).reset_index()
+    
+    # S'assurer que toutes les colonnes de médailles existent
+    for col in ['Gold Medal', 'Silver Medal', 'Bronze Medal']:
+        if col not in medal_pivot.columns:
+            medal_pivot[col] = 0
+    
+    # Calculer le total
+    medal_pivot['Total'] = (
+        medal_pivot['Gold Medal'] + 
+        medal_pivot['Silver Medal'] + 
+        medal_pivot['Bronze Medal']
+    )
+    
+    # Ajouter code (duplicate de country_code pour compatibilité)
+    medal_pivot['code'] = medal_pivot['country_code']
+    
+    # Calculer les ratios
+    medal_pivot['gold_ratio'] = (
+        medal_pivot['Gold Medal'] / medal_pivot['Total']
+    ).fillna(0).round(3)
+    
+    medal_pivot['silver_ratio'] = (
+        medal_pivot['Silver Medal'] / medal_pivot['Total']
+    ).fillna(0).round(3)
+    
+    medal_pivot['bronze_ratio'] = (
+        medal_pivot['Bronze Medal'] / medal_pivot['Total']
+    ).fillna(0).round(3)
+    
+    # Calculer medal_quality_score
+    medal_pivot['medal_quality_score'] = (
+        medal_pivot['Gold Medal'] * 3 + 
+        medal_pivot['Silver Medal'] * 2 + 
+        medal_pivot['Bronze Medal'] * 1
+    )
+    
+    # Calculer les rangs
+    medal_pivot['rank_by_total'] = medal_pivot['Total'].rank(
+        method='min', ascending=False
+    ).astype(int)
+    
+    medal_pivot['rank_by_gold'] = medal_pivot['Gold Medal'].rank(
+        method='min', ascending=False
+    ).astype(int)
+    
+    medal_pivot['rank_by_quality'] = medal_pivot['medal_quality_score'].rank(
+        method='min', ascending=False
+    ).astype(int)
+    
+    # Trier par total
+    medal_pivot = medal_pivot.sort_values('Total', ascending=False)
+    
+    return medal_pivot
+
+
+# Remplacer cette ligne:
+# filtered_medals_total = apply_filters(data['medals_total'], 'medals_total')
+
+# Par:
+
+
 # Apply filters to datasets
 filtered_athletes = apply_filters(data['athletes'], 'athletes')
 filtered_events = apply_filters(data['events'], 'events')
-filtered_medals_total = apply_filters(data['medals_total'], 'medals_total')
+filtered_medals_total = get_filtered_medals_total()
 filtered_medals = apply_filters(data['medals'], 'medals')
 
 # ============================================================================
