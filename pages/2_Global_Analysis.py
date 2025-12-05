@@ -211,58 +211,86 @@ st.markdown("---")
 st.header("🎯 Medal Hierarchy by Continent")
 st.markdown("**Hierarchical view: Continent → Country → Sport → Medal Count**")
 
-# Prepare data for hierarchy
-medals_hierarchy = apply_filters(data['medals'], filter_continent=True, filter_country=False)
+# Appliquer tous les filtres (continent, country, gender, medal type) sur les médailles
+def apply_all_filters(df):
+    filtered_df = df.copy()
+    # Continent
+    if selected_continent != 'All':
+        col_continent = next((c for c in filtered_df.columns if c.lower() == 'continent'), None)
+        if col_continent:
+            filtered_df = filtered_df[filtered_df[col_continent] == selected_continent]
+    # Country
+    if selected_country != 'All':
+        col_country = next((c for c in filtered_df.columns if c.lower() == 'country'), None)
+        if col_country:
+            filtered_df = filtered_df[filtered_df[col_country] == selected_country]
+    # Gender
+    gender_map = {
+        'Male': 'M',
+        'Female': 'W'
+    }
+    if selected_gender != 'All':
+        # 1. Obtenir le code de genre réel ('M' ou 'W')
+        data_gender_code = gender_map.get(selected_gender)
+        col_gender = next((c for c in filtered_df.columns if c.lower() == 'gender'), None)
+        if col_gender and data_gender_code:
+            filtered_df = filtered_df[filtered_df[col_gender] == data_gender_code]
+    # Medal type
+    if selected_medal_type:
+        medal_map = {
+            'Gold': 'Gold Medal',
+            'Silver': 'Silver Medal',
+            'Bronze': 'Bronze Medal'
+        }
+        data_medal_types = [medal_map[m] for m in selected_medal_type if m in medal_map]
+        col_medal_type = next((c for c in filtered_df.columns if c.lower() == 'medal_type'), None)
+        if col_medal_type and data_medal_types:
+            filtered_df = filtered_df[filtered_df[col_medal_type].isin(data_medal_types)]
+    return filtered_df
 
-# Filter by medal type
-if selected_medal_type:
-    medals_hierarchy = medals_hierarchy[medals_hierarchy['medal_type'].isin(selected_medal_type)]
+medals_hierarchy = apply_all_filters(data['medals'])
 
-# Create hierarchy dataframe
+# Créer la hiérarchie
 hierarchy_data = medals_hierarchy.groupby(
     ['continent', 'country', 'discipline', 'medal_type']
 ).size().reset_index(name='count')
 
-# Create tabs for different visualizations
 tab1, tab2 = st.tabs(["📊 Sunburst Chart", "🔲 Treemap"])
 
 with tab1:
-    # Sunburst chart
-    fig_sunburst = px.sunburst(
-        hierarchy_data,
-        path=['continent', 'country', 'discipline', 'medal_type'],
-        values='count',
-        color='medal_type',
-        color_discrete_map={
-            'Gold': '#FFE766',
-            'Silver': '#C0C0C0',
-            'Bronze': '#d99d73'
-        },
-        title='Medal Distribution Hierarchy (Click to drill down)',
-        height=700
-    )
-    
-    fig_sunburst.update_traces(textinfo='label+percent entry')
-    st.plotly_chart(fig_sunburst, use_container_width=True)
+        fig_sunburst = px.sunburst(
+            hierarchy_data,
+            path=['continent', 'country', 'discipline', 'medal_type'],
+            values='count',
+            color='medal_type',
+            color_discrete_map={
+                'Gold': '#FFE766',
+                'Silver': '#C0C0C0',
+                'Bronze': '#d99d73'
+            },
+            title='Medal Distribution Hierarchy (Click to drill down)',
+            height=700
+        )
+        fig_sunburst.update_traces(textinfo='label+percent entry')
+        st.plotly_chart(fig_sunburst, use_container_width=True)
 
 with tab2:
-    # Treemap
-    fig_treemap = px.treemap(
-        hierarchy_data,
-        path=['continent', 'country', 'discipline', 'medal_type'],
-        values='count',
-        color='medal_type',
-        color_discrete_map={
-            'Gold': '#FFE766',
-            'Silver': '#C0C0C0',
-            'Bronze': '#d99d73'
-        },
-        title='Medal Distribution Treemap',
-        height=700
-    )
-    
-    fig_treemap.update_traces(textinfo='label+value+percent parent')
-    st.plotly_chart(fig_treemap, use_container_width=True)
+
+        fig_treemap = px.treemap(
+            hierarchy_data,
+            path=['continent', 'country', 'discipline', 'medal_type'],
+            values='count',
+            color='medal_type',
+            color_discrete_map={
+                'Gold': '#FFE766',
+                'Silver': '#C0C0C0',
+                'Bronze': '#d99d73'
+            },
+            title='Medal Distribution Treemap',
+            height=700
+        )
+        fig_treemap.update_traces(textinfo='label+value+percent parent')
+        st.plotly_chart(fig_treemap, use_container_width=True)
 
 st.markdown("---")
 
