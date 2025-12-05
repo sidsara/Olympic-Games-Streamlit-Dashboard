@@ -283,8 +283,9 @@ filtered_medals = apply_filters(data['medals'], 'medals')
 # ============================================================================
 # HEADER
 # ============================================================================
-st.markdown('<p class="main-header">🏅 Paris 2024 Olympics Dashboard</p>', unsafe_allow_html=True)
-st.markdown('<p class="sub-header">The Command Center: Your Gateway to Olympic Excellence</p>', unsafe_allow_html=True)
+_, col_logo, _ = st.columns([1, 2, 1])
+with col_logo:
+    st.image("figures/logos/logo.png", width=320)
 st.markdown("---")
 
 # ============================================================================
