@@ -30,11 +30,13 @@ st.markdown("""
     .main-title {
         font-size: 2.8rem;
         font-weight: bold;
-        color: #546E7A;
+        background: linear-gradient(90deg, #b3e5fc 0%, #FFD700 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
         text-align: center;
         margin-bottom: 1rem;
         letter-spacing: 2px;
-        text-shadow: 2px 2px 8px rgba(84, 110, 122, 0.3);
+        text-shadow: 2px 2px 8px rgba(179, 229, 252, 0.15);
         animation: bounce 1.2s infinite alternate;
     }
     @keyframes bounce {
@@ -43,23 +45,23 @@ st.markdown("""
     }
     .subtitle {
         font-size: 1.2rem;
-        color: #666;
+        color: #333;
         text-align: center;
         margin-bottom: 2rem;
         font-style: italic;
-        background: linear-gradient(90deg, #90A4AE 0%, #607D8B 100%);
+        background: linear-gradient(90deg, #b3e5fc 0%, #FFD700 100%);
         border-radius: 8px;
         padding: 0.5rem;
-        box-shadow: 0 2px 8px rgba(96, 125, 139, 0.3);
+        box-shadow: 0 2px 8px rgba(179, 229, 252, 0.15);
     }
     .score-card {
-        background: linear-gradient(135deg, #B0BEC5 0%, #78909C 100%);
+        background: linear-gradient(135deg, #b3e5fc 0%, #FFD700 100%);
         padding: 1.2rem;
         border-radius: 12px;
         text-align: center;
         margin: 1rem 0;
-        border: 2px solid #90A4AE;
-        box-shadow: 0 2px 8px rgba(144, 164, 174, 0.3);
+        border: 2px solid #FFD700;
+        box-shadow: 0 2px 8px rgba(179, 229, 252, 0.15);
         animation: pulse 1.5s infinite;
     }
     @keyframes pulse {
@@ -68,10 +70,11 @@ st.markdown("""
         100% { box-shadow: 0 0 0 0 rgba(144, 164, 174, 0.3);}
     }
     .score-card h4 {
-        color: #546E7A;
+        color: #333;
         margin-bottom: 0.5rem;
         font-size: 1.1rem;
         font-weight: bold;
+        text-shadow: 1px 1px 6px #b3e5fc;
     }
     .score-card h2 {
         color: #333;
@@ -137,11 +140,11 @@ st.markdown("""
         font-size: 1.1rem;
     }
     .question-card {
-        background: linear-gradient(135deg, #ECEFF1 0%, #CFD8DC 100%);
+        background: linear-gradient(135deg, #b3e5fc 0%, #FFD700 100%);
         border-radius: 16px;
         padding: 1.5rem;
-        border: 2px solid #78909C;
-        box-shadow: 0 2px 12px rgba(120, 144, 156, 0.3);
+        border: 2px solid #FFD700;
+        box-shadow: 0 2px 12px rgba(179, 229, 252, 0.15);
         margin-bottom: 1.5rem;
         animation: fadeIn 0.7s;
         position: relative;
@@ -166,14 +169,14 @@ st.markdown("""
         position: absolute;
         top: -25px;
         right: 25px;
-        background: #607D8B;
-        color: #fff;
+        background: linear-gradient(90deg, #b3e5fc 0%, #FFD700 100%);
+        color: #333;
         font-size: 1.3rem;
         font-weight: bold;
         padding: 0.5rem 1.2rem;
         border-radius: 50px;
-        box-shadow: 0 2px 8px rgba(96, 125, 139, 0.3);
-        border: 2px solid #90A4AE;
+        box-shadow: 0 2px 8px rgba(179, 229, 252, 0.15);
+        border: 2px solid #FFD700;
         z-index: 2;
     }
     .info-text {
