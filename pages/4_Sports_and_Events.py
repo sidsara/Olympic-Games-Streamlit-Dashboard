@@ -99,20 +99,6 @@ selected_gender = st.sidebar.selectbox(
     key='gender_filter'
 )
 
-# Date range filter
-if data['schedules']['start_date'].notna().any():
-    min_date = data['schedules']['start_date'].min().date()
-    max_date = data['schedules']['end_date'].max().date()
-    
-    date_range = st.sidebar.date_input(
-        "Select Date Range",
-        value=(min_date, max_date),
-        min_value=min_date,
-        max_value=max_date,
-        key='date_filter'
-    )
-else:
-    date_range = None
 
 st.sidebar.markdown("---")
 st.sidebar.info("💡 **Tip**: Explore schedules, venues, and medal distributions by sport!")

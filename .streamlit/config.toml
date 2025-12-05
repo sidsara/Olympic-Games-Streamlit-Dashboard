@@ -1,15 +1,15 @@
 [theme]
-# Bleu Foncé: Couleur pour les éléments interactifs et les icônes.
-primaryColor="#4b5e87"
+# Couleur principale : Un bleu clair pour les éléments interactifs et les icônes.
+primaryColor="#4a90e2"
 
-# Couleur de fond principal : Blanc cassé pour le meilleur contraste avec le texte.
-backgroundColor="#e8fcfcff"
+# Couleur de fond principal : Un gris clair pour un mode clair agréable.
+backgroundColor="#f5f5f5"
 
-# Couleur de fond secondaire : Bleu Ciel pour la barre latérale et les conteneurs/cards.
-secondaryBackgroundColor="#d2ffd2ff"
+# Couleur de fond secondaire : Un gris légèrement plus foncé pour la barre latérale.
+secondaryBackgroundColor="#e0e0e0"
 
-# Couleur du texte : Noir Profond pour la lisibilité.
-textColor="#1a1a1a"
+# Couleur du texte : Noir pour une meilleure lisibilité.
+textColor="#333333"
 
 # Police d'écriture (Optionnel)
 font="sans serif"

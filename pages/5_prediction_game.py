@@ -30,11 +30,11 @@ st.markdown("""
     .main-title {
         font-size: 2.8rem;
         font-weight: bold;
-        color: #FF9800;
+        color: #546E7A;
         text-align: center;
         margin-bottom: 1rem;
         letter-spacing: 2px;
-        text-shadow: 2px 2px 8px #FFD700;
+        text-shadow: 2px 2px 8px rgba(84, 110, 122, 0.3);
         animation: bounce 1.2s infinite alternate;
     }
     @keyframes bounce {
@@ -47,28 +47,28 @@ st.markdown("""
         text-align: center;
         margin-bottom: 2rem;
         font-style: italic;
-        background: linear-gradient(90deg, #FFEB3B 0%, #FF9800 100%);
+        background: linear-gradient(90deg, #90A4AE 0%, #607D8B 100%);
         border-radius: 8px;
         padding: 0.5rem;
-        box-shadow: 0 2px 8px #FFD70055;
+        box-shadow: 0 2px 8px rgba(96, 125, 139, 0.3);
     }
     .score-card {
-        background: linear-gradient(135deg, #FFEB3B 0%, #FF9800 100%);
+        background: linear-gradient(135deg, #B0BEC5 0%, #78909C 100%);
         padding: 1.2rem;
         border-radius: 12px;
         text-align: center;
         margin: 1rem 0;
-        border: 2px solid #FFD700;
-        box-shadow: 0 2px 8px #FFD70055;
+        border: 2px solid #90A4AE;
+        box-shadow: 0 2px 8px rgba(144, 164, 174, 0.3);
         animation: pulse 1.5s infinite;
     }
     @keyframes pulse {
-        0% { box-shadow: 0 0 0 0 #FFD70055;}
-        70% { box-shadow: 0 0 10px 10px #FFD70022;}
-        100% { box-shadow: 0 0 0 0 #FFD70055;}
+        0% { box-shadow: 0 0 0 0 rgba(144, 164, 174, 0.3);}
+        70% { box-shadow: 0 0 10px 10px rgba(144, 164, 174, 0.1);}
+        100% { box-shadow: 0 0 0 0 rgba(144, 164, 174, 0.3);}
     }
     .score-card h4 {
-        color: #FF9800;
+        color: #546E7A;
         margin-bottom: 0.5rem;
         font-size: 1.1rem;
         font-weight: bold;
@@ -85,7 +85,7 @@ st.markdown("""
         border-radius: 12px;
         border-left: 6px solid #43A047;
         margin: 1rem 0;
-        box-shadow: 0 2px 8px #43A04755;
+        box-shadow: 0 2px 8px rgba(67, 160, 71, 0.3);
         animation: tada 0.7s;
     }
     @keyframes tada {
@@ -113,7 +113,7 @@ st.markdown("""
         border-radius: 12px;
         border-left: 6px solid #B71C1C;
         margin: 1rem 0;
-        box-shadow: 0 2px 8px #B71C1C55;
+        box-shadow: 0 2px 8px rgba(183, 28, 28, 0.3);
         animation: shake 0.5s;
     }
     @keyframes shake {
@@ -137,11 +137,11 @@ st.markdown("""
         font-size: 1.1rem;
     }
     .question-card {
-        background: linear-gradient(135deg, #E3F2FD 0%, #FFEB3B 100%);
+        background: linear-gradient(135deg, #ECEFF1 0%, #CFD8DC 100%);
         border-radius: 16px;
         padding: 1.5rem;
-        border: 2px solid #FF9800;
-        box-shadow: 0 2px 12px #FF980055;
+        border: 2px solid #78909C;
+        box-shadow: 0 2px 12px rgba(120, 144, 156, 0.3);
         margin-bottom: 1.5rem;
         animation: fadeIn 0.7s;
         position: relative;
@@ -151,11 +151,11 @@ st.markdown("""
         to { opacity: 1;}
     }
     .question-card h3 {
-        color: #FF9800;
+        color: #546E7A;
         margin-bottom: 0.8rem;
         font-size: 1.7rem;
         font-family: 'Comic Sans MS', cursive, sans-serif;
-        text-shadow: 1px 1px 6px #FFD700;
+        text-shadow: 1px 1px 6px rgba(84, 110, 122, 0.2);
     }
     .question-card p {
         color: #333;
@@ -166,14 +166,14 @@ st.markdown("""
         position: absolute;
         top: -25px;
         right: 25px;
-        background: #FF9800;
+        background: #607D8B;
         color: #fff;
         font-size: 1.3rem;
         font-weight: bold;
         padding: 0.5rem 1.2rem;
         border-radius: 50px;
-        box-shadow: 0 2px 8px #FFD70055;
-        border: 2px solid #FFD700;
+        box-shadow: 0 2px 8px rgba(96, 125, 139, 0.3);
+        border: 2px solid #90A4AE;
         z-index: 2;
     }
     .info-text {
@@ -190,17 +190,17 @@ st.markdown("""
     .option-btn {
         font-size: 1.1rem !important;
         font-weight: bold !important;
-        background: linear-gradient(90deg, #FFEB3B 0%, #FF9800 100%) !important;
-        color: #333 !important;
+        background: linear-gradient(90deg, #B0BEC5 0%, #78909C 100%) !important;
+        color: #fff !important;
         border-radius: 10px !important;
         margin-bottom: 10px !important;
-        border: 2px solid #FFD700 !important;
-        box-shadow: 0 2px 8px #FFD70033 !important;
+        border: 2px solid #90A4AE !important;
+        box-shadow: 0 2px 8px rgba(144, 164, 174, 0.2) !important;
         transition: transform 0.1s;
     }
     .option-btn:hover {
         transform: scale(1.05);
-        background: linear-gradient(90deg, #FFD700 0%, #FF9800 100%) !important;
+        background: linear-gradient(90deg, #78909C 0%, #546E7A 100%) !important;
         color: #fff !important;
     }
     </style>
@@ -488,15 +488,8 @@ if st.session_state.current_question:
             </div>
             """, unsafe_allow_html=True)
 
-        # Bouton pour question suivante, centré
-        st.markdown("""
-        <div style='text-align:center; margin-top:20px;'>
-            <form>
-                <button style='font-size:1.2rem; background:linear-gradient(90deg,#FFEB3B,#FF9800);color:#333;border-radius:10px;padding:0.7rem 2rem;border:2px solid #FFD700;box-shadow:0 2px 8px #FFD70033;cursor:pointer;' type='submit'>➡️ Question suivante</button>
-            </form>
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button("➡️ Question suivante", use_container_width=True):
+        # Bouton pour question suivante, UN SEUL
+        if st.button("➡️ Question suivante", use_container_width=True, type="primary"):
             st.session_state.current_question = get_new_question(df, st.session_state.difficulty)
             st.session_state.answered = False
             st.rerun()
