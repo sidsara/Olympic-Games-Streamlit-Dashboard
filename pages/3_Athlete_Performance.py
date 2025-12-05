@@ -29,30 +29,40 @@ DATA_DIR = Path(__file__).parent.parent / 'data'
 
 @st.cache_data
 def load_data():
-    """Load all necessary datasets for Athlete Performance page"""
+    data_dir = DATA_DIR
+    import pandas as pd
     try:
-        # Load the athletes dataset with images if available
-        athletes_with_images = DATA_DIR / 'athletes_with_images.csv'
-        if athletes_with_images.exists():
-            athletes_enriched = pd.read_csv(athletes_with_images)
-        else:
-            athletes_enriched = pd.read_csv(DATA_DIR / 'athletes_enriched.csv')
+        athletes = pd.read_csv(data_dir / 'athletes_enriched.csv')
+        # fallback si besoin
+        if 'name' not in athletes.columns:
+            athletes = pd.read_csv(data_dir / 'athletes_cleaned.csv')
 
-        athlete_medals_summary = pd.read_csv(DATA_DIR / 'athlete_medals_summary.csv')
-        gender_distribution = pd.read_csv(DATA_DIR / 'gender_distribution.csv')
-        medals_enriched = pd.read_csv(DATA_DIR / 'medals_enriched.csv')
-        medalists_enriched = pd.read_csv(DATA_DIR / 'medalists_enriched.csv')
-        
+        medalists = pd.read_csv(data_dir / 'medalists_enriched.csv')
+        gender_dist = pd.read_csv(data_dir / 'gender_distribution.csv')
+        athlete_medals = pd.read_csv(data_dir / 'athlete_medals_summary.csv')
+
+        # ajout pour les coachs/équipes
+        teams = pd.read_csv(data_dir / 'teams_cleaned.csv')
+        coaches = pd.read_csv(data_dir / 'coaches_cleaned.csv')
+
+
+        # normaliser types des listes (teams_cleaned a des listes sous forme de chaînes)
+        for col in ['athletes_codes', 'coaches', 'coaches_codes']:
+            if col in teams.columns:
+                teams[col] = teams[col].apply(
+                    lambda x: eval(x) if isinstance(x, str) and x.startswith('[') else x
+                )
+
         return {
-            'athletes': athletes_enriched,
-            'athlete_medals': athlete_medals_summary,
-            'gender_dist': gender_distribution,
-            'medals': medals_enriched,
-            'medalists': medalists_enriched
+            'athletes': athletes,
+            'medalists': medalists,
+            'gender_dist': gender_dist,
+            'athlete_medals': athlete_medals,
+            'teams': teams,
+            'coaches': coaches
         }
-    except FileNotFoundError as e:
-        st.error(f"❌ Error loading data: {e}")
-        st.info("Please run cleaning.py and merging.py first to generate the required datasets.")
+    except Exception as e:
+        st.error(f"Error loading data: {e}")
         st.stop()
 
 # Load data
@@ -133,6 +143,65 @@ def apply_filters(df):
     
     return filtered_df
 
+def get_coaches_for_athlete(athlete_row, data):
+    import pandas as pd
+
+    # 1) champs directs dans athletes_enriched
+    names = []
+    # all_coaches: liste ou texte avec noms séparés par commas
+    if 'all_coaches' in athlete_row and pd.notna(athlete_row['all_coaches']) and str(athlete_row['all_coaches']).strip() and str(athlete_row['all_coaches']).lower() != 'n/a':
+        raw = str(athlete_row['all_coaches'])
+        # essayer d'interpréter comme liste Python sinon split
+        try:
+            val = eval(raw) if raw.startswith('[') else raw
+            if isinstance(val, list):
+                names = [str(x).strip() for x in val if str(x).strip()]
+            else:
+                names = [s.strip() for s in raw.replace('<br>', ',').split(',') if s.strip()]
+        except Exception:
+            names = [s.strip() for s in raw.replace('<br>', ',').split(',') if s.strip()]
+
+    # coach: texte libre
+    if not names and 'coach' in athlete_row and pd.notna(athlete_row['coach']) and str(athlete_row['coach']).strip() and str(athlete_row['coach']).lower() != 'n/a':
+        raw = str(athlete_row['coach'])
+        parts = [p.strip() for p in raw.replace('<br>', ',').split(',') if p.strip()]
+        names = parts
+
+    # 2) via teams_cleaned: chercher les teams où l'athlète appartient
+    if not names and 'teams' in data and 'code' in athlete_row:
+        athlete_code = str(athlete_row['code'])
+        teams_df = data['teams']
+        hit = teams_df[teams_df['athletes_codes'].apply(lambda lst: isinstance(lst, list) and athlete_code in lst)]
+        if not hit.empty:
+            # préférer noms directs si présents
+            if 'coaches' in hit.columns and hit['coaches'].notna().any():
+                for lst in hit['coaches']:
+                    if isinstance(lst, list):
+                        names.extend([str(x).strip() for x in lst if str(x).strip()])
+            # sinon, utiliser coaches_codes pour mapper via coaches_cleaned
+            elif 'coaches_codes' in hit.columns and 'coaches' in data:
+                coach_codes = []
+                for lst in hit['coaches_codes']:
+                    if isinstance(lst, list):
+                        coach_codes.extend([str(x) for x in lst])
+                if coach_codes:
+                    coaches_df = data['coaches']
+                    # essayer colonnes usuelles: code, name
+                    code_col = 'code' if 'code' in coaches_df.columns else None
+                    name_col = 'name' if 'name' in coaches_df.columns else None
+                    if code_col and name_col:
+                        mapped = coaches_df[coaches_df[code_col].astype(str).isin(coach_codes)][name_col].tolist()
+                        names.extend([str(x).strip() for x in mapped if str(x).strip()])
+
+    # nettoyer doublons, garder ordre
+    seen = set()
+    cleaned = []
+    for n in names:
+        if n not in seen:
+            cleaned.append(n)
+            seen.add(n)
+
+    return cleaned
 # ============================================================================
 # PAGE HEADER
 # ============================================================================
@@ -201,24 +270,46 @@ if selected_athlete and selected_athlete != '':
     
     with col4:
         st.markdown("#### 🏅 Sports & Team")
-        sports_display = athlete_data['disciplines'] if pd.notna(athlete_data['disciplines']) else "N/A"
+        sports_display = athlete_data['disciplines'] if pd.notna(athlete_data.get('disciplines')) else "N/A"
         st.markdown(f"**Sport(s):** {sports_display}")
-        team_display = athlete_data['team_name'] if pd.notna(athlete_data['team_name']) else "Individual"
+        team_display = athlete_data['team_name'] if 'team_name' in athlete_data and pd.notna(athlete_data['team_name']) else "Individual"
         st.markdown(f"**Team:** {team_display}")
+
+        # Coach(s)
+        coaches_list = get_coaches_for_athlete(athlete_data, data)
+        if coaches_list:
+            st.markdown(f"**Coach(s):** {', '.join(coaches_list)}")
+        else:
+            st.markdown("**Coach(s):** N/A")
     
-    athlete_medals = data['medalists'][data['medalists']['name'] == selected_athlete]
-    if not athlete_medals.empty:
-        st.markdown("#### 🏆 Medal Achievements")
-        gold = len(athlete_medals[athlete_medals['medal_type'] == 'Gold'])
-        silver = len(athlete_medals[athlete_medals['medal_type'] == 'Silver'])
-        bronze = len(athlete_medals[athlete_medals['medal_type'] == 'Bronze'])
-        colg, cols, colb, colt = st.columns(4)
-        colg.metric("🥇 Gold", gold)
-        cols.metric("🥈 Silver", silver)
-        colb.metric("🥉 Bronze", bronze)
-        colt.metric("📊 Total", len(athlete_medals))
+athlete_medals = data['medalists'][data['medalists']['name'] == selected_athlete]
+if not athlete_medals.empty:
+    st.markdown("#### 🏆 Medal Achievements")
+    
+    # Récupérer les medals depuis athlete_medals_summary pour avoir les bons totaux
+    athlete_summary = data['athlete_medals'][data['athlete_medals']['name'] == selected_athlete]
+    
+    if not athlete_summary.empty:
+        # Utiliser les données agrégées de athlete_medals_summary
+        athlete_row = athlete_summary.iloc[0]
+        gold = int(athlete_row['Gold Medal']) if pd.notna(athlete_row['Gold Medal']) else 0
+        silver = int(athlete_row['Silver Medal']) if pd.notna(athlete_row['Silver Medal']) else 0
+        bronze = int(athlete_row['Bronze Medal']) if pd.notna(athlete_row['Bronze Medal']) else 0
+        total = int(athlete_row['total_medals']) if pd.notna(athlete_row['total_medals']) else 0
     else:
-        st.info("ℹ️ This athlete did not win any medals at Paris 2024.")
+        # Fallback: compter depuis medalists si pas dans le summary
+        gold = len(athlete_medals[athlete_medals['medal_type'] == 'Gold Medal'])
+        silver = len(athlete_medals[athlete_medals['medal_type'] == 'Silver Medal'])
+        bronze = len(athlete_medals[athlete_medals['medal_type'] == 'Bronze Medal'])
+        total = len(athlete_medals)
+    
+    colg, cols, colb, colt = st.columns(4)
+    colg.metric("🥇 Gold", gold)
+    cols.metric("🥈 Silver", silver)
+    colb.metric("🥉 Bronze", bronze)
+    colt.metric("📊 Total", total)
+else:
+    st.info("ℹ️ This athlete did not win any medals at Paris 2024.")
 
 st.markdown("---")
 
@@ -483,13 +574,10 @@ if len(top_athletes) > 0:
     # Create stacked bar chart
     top_athletes_melted = top_athletes.melt(
         id_vars=['name', 'country', 'rank'],
-        value_vars=['gold_count', 'silver_count', 'bronze_count'],
+        value_vars=['Gold Medal', 'Silver Medal', 'Bronze Medal'],
         var_name='Medal Type',
         value_name='Count'
     )
-    
-    # Clean medal type names
-    top_athletes_melted['Medal Type'] = top_athletes_melted['Medal Type'].str.replace('_count', '').str.capitalize()
     
     fig_top_athletes = px.bar(
         top_athletes_melted,
@@ -517,7 +605,7 @@ if len(top_athletes) > 0:
     # Detailed table
     st.subheader(f"📋 Top {top_n} Athletes - Detailed View")
     
-    display_cols = ['rank', 'name', 'country', 'gender', 'gold_count', 'silver_count', 'bronze_count', 'total_medals', 'disciplines']
+    display_cols = ['rank', 'name', 'country', 'gender', 'Gold Medal', 'Silver Medal', 'Bronze Medal', 'total_medals', 'disciplines']
     display_df = top_athletes[display_cols].copy()
     display_df.columns = ['Rank', 'Name', 'Country', 'Gender', '🥇 Gold', '🥈 Silver', '🥉 Bronze', '📊 Total', 'Sport(s)']
     
@@ -551,9 +639,9 @@ if len(top_athletes) > 0:
         st.markdown(f"**Sport(s):** {champion['disciplines']}")
     
     with spotlight_col3:
-        st.metric("🥇 Gold Medals", int(champion['gold_count']))
-        st.metric("🥈 Silver Medals", int(champion['silver_count']))
-        st.metric("🥉 Bronze Medals", int(champion['bronze_count']))
+        st.metric("🥇 Gold Medals", int(champion['Gold Medal']))
+        st.metric("🥈 Silver Medals", int(champion['Silver Medal']))
+        st.metric("🥉 Bronze Medals", int(champion['Bronze Medal']))
         st.metric("📊 Total Medals", int(champion['total_medals']))
 else:
     st.warning("⚠️ No medal data available for the current filters.")

@@ -348,66 +348,58 @@ def create_continent_summary():
 
 
 def create_sport_summary():
-    """
-    Create sport_summary.csv
-    Aggregates medal and event data by sport
-    
-    Used in: Page 4 (Sports and Events - Medal count by sport, treemap)
-    """
+    """Create sport-level summary statistics"""
     print("Creating sport_summary.csv...")
     
-    # Load data
     medalists = pd.read_csv(DATA_DIR / 'medalists_enriched.csv')
-    events = pd.read_csv(DATA_DIR / 'events_cleaned.csv')
-    
-    # Count medals by sport and type
-    medal_counts = medalists.groupby(['sport', 'medal_type']).size().unstack(fill_value=0)
-    medal_counts = medal_counts.reset_index()
-    
-    # Rename columns if they exist
-    if 'Gold' in medal_counts.columns:
-        medal_counts = medal_counts.rename(columns={
-            'Gold': 'gold_medals',
-            'Silver': 'silver_medals',
-            'Bronze': 'bronze_medals'
-        })
-    else:
-        medal_counts['gold_medals'] = 0
-        medal_counts['silver_medals'] = 0
-        medal_counts['bronze_medals'] = 0
-    
-    # Calculate total medals
-    medal_counts['total_medals'] = (
-        medal_counts['gold_medals'] + 
-        medal_counts['silver_medals'] + 
-        medal_counts['bronze_medals']
-    )
-    
-    # Count events per sport
-    event_counts = events.groupby('sport').size().reset_index(name='num_events')
+    events = pd.read_csv(DATA_DIR / 'events_enriched.csv')
     
     # Count unique disciplines per sport
     discipline_counts = medalists.groupby('sport')['discipline'].nunique().reset_index(name='num_disciplines')
     
-    # Merge all together
-    sport_summary = medal_counts.merge(event_counts, on='sport', how='left')
-    sport_summary = sport_summary.merge(discipline_counts, on='sport', how='left')
+    # Count events per sport (use 'event' column, not 'event_name')
+    event_counts = events.groupby('sport')['event'].nunique().reset_index(name='num_events')
     
-    # Fill NaN values
-    sport_summary['num_events'] = sport_summary['num_events'].fillna(0).astype(int)
-    sport_summary['num_disciplines'] = sport_summary['num_disciplines'].fillna(0).astype(int)
+    # Count athletes per sport (use 'name' column from medalists)
+    athlete_counts = medalists.groupby('sport')['name'].nunique().reset_index(name='num_athletes')
     
-    # Calculate medals per event
-    sport_summary['medals_per_event'] = (
-        sport_summary['total_medals'] / sport_summary['num_events']
-    ).fillna(0).round(2)
+    # Count medals by type per sport
+    medal_counts = medalists.groupby(['sport', 'medal_type']).size().reset_index(name='count')
+    medal_pivot = medal_counts.pivot(index='sport', columns='medal_type', values='count').fillna(0).reset_index()
+    
+    # Ensure all medal type columns exist
+    for col in ['Bronze Medal', 'Gold Medal', 'Silver Medal']:
+        if col not in medal_pivot.columns:
+            medal_pivot[col] = 0
+    
+    medal_pivot.columns.name = None
+    medal_pivot = medal_pivot.rename(columns={
+        'Bronze Medal': 'Bronze Medal',
+        'Gold Medal': 'Gold Medal', 
+        'Silver Medal': 'Silver Medal'
+    })
+    
+    medal_pivot['total_medals'] = (
+        medal_pivot['Gold Medal'] + 
+        medal_pivot['Silver Medal'] + 
+        medal_pivot['Bronze Medal']
+    )
+    
+    # Merge all summaries
+    sport_summary = discipline_counts.merge(event_counts, on='sport', how='left')
+    sport_summary = sport_summary.merge(athlete_counts, on='sport', how='left')
+    sport_summary = sport_summary.merge(medal_pivot, on='sport', how='left')
+    
+    # Fill NaN with 0
+    sport_summary = sport_summary.fillna(0)
     
     # Sort by total medals
     sport_summary = sport_summary.sort_values('total_medals', ascending=False)
     
-    # Save summary
+    # Save
     sport_summary.to_csv(DATA_DIR / 'sport_summary.csv', index=False)
     print(f"✓ Created sport_summary: {len(sport_summary)} records, {len(sport_summary.columns)} columns")
+    
     return sport_summary
 
 
@@ -433,30 +425,24 @@ def create_athlete_medals_summary():
     athlete_medals = medalists.groupby(['name', 'country_code', 'country', 'gender', 'continent'])['medal_type'].value_counts().unstack(fill_value=0)
     athlete_medals = athlete_medals.reset_index()
     
-    # Rename columns if they exist
-    if 'Gold' in athlete_medals.columns:
-        athlete_medals = athlete_medals.rename(columns={
-            'Gold': 'gold_count',
-            'Silver': 'silver_count',
-            'Bronze': 'bronze_count'
-        })
-    else:
-        athlete_medals['gold_count'] = 0
-        athlete_medals['silver_count'] = 0
-        athlete_medals['bronze_count'] = 0
+    # The columns from unstack will be 'Gold Medal', 'Silver Medal', 'Bronze Medal'
+    # Ensure all medal columns exist
+    for col in ['Gold Medal', 'Silver Medal', 'Bronze Medal']:
+        if col not in athlete_medals.columns:
+            athlete_medals[col] = 0
     
     # Calculate total medals
     athlete_medals['total_medals'] = (
-        athlete_medals['gold_count'] + 
-        athlete_medals['silver_count'] + 
-        athlete_medals['bronze_count']
+        athlete_medals['Gold Medal'] + 
+        athlete_medals['Silver Medal'] + 
+        athlete_medals['Bronze Medal']
     )
     
     # Calculate quality score
     athlete_medals['medal_quality_score'] = (
-        athlete_medals['gold_count'] * 3 + 
-        athlete_medals['silver_count'] * 2 + 
-        athlete_medals['bronze_count'] * 1
+        athlete_medals['Gold Medal'] * 3 + 
+        athlete_medals['Silver Medal'] * 2 + 
+        athlete_medals['Bronze Medal'] * 1
     )
     
     # Merge with athletes to get additional info (age, sport, etc.)
