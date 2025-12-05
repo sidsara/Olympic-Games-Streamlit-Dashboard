@@ -28,101 +28,180 @@ DATA_DIR = Path(__file__).parent.parent / 'data'
 st.markdown("""
     <style>
     .main-title {
-        font-size: 2.5rem;
+        font-size: 2.8rem;
         font-weight: bold;
-        color: #0066CC;
+        color: #FF9800;
         text-align: center;
         margin-bottom: 1rem;
+        letter-spacing: 2px;
+        text-shadow: 2px 2px 8px #FFD700;
+        animation: bounce 1.2s infinite alternate;
     }
-    
+    @keyframes bounce {
+        0% { transform: translateY(0);}
+        100% { transform: translateY(-10px);}
+    }
     .subtitle {
-        font-size: 1.1rem;
+        font-size: 1.2rem;
         color: #666;
         text-align: center;
         margin-bottom: 2rem;
-    }
-    
-    .score-card {
-        background-color: #f0f2f6;
-        padding: 1.2rem;
+        font-style: italic;
+        background: linear-gradient(90deg, #FFEB3B 0%, #FF9800 100%);
         border-radius: 8px;
+        padding: 0.5rem;
+        box-shadow: 0 2px 8px #FFD70055;
+    }
+    .score-card {
+        background: linear-gradient(135deg, #FFEB3B 0%, #FF9800 100%);
+        padding: 1.2rem;
+        border-radius: 12px;
         text-align: center;
         margin: 1rem 0;
-        border: 1px solid #ddd;
+        border: 2px solid #FFD700;
+        box-shadow: 0 2px 8px #FFD70055;
+        animation: pulse 1.5s infinite;
     }
-    
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 #FFD70055;}
+        70% { box-shadow: 0 0 10px 10px #FFD70022;}
+        100% { box-shadow: 0 0 0 0 #FFD70055;}
+    }
     .score-card h4 {
-        color: #0066CC;
+        color: #FF9800;
         margin-bottom: 0.5rem;
-        font-size: 0.9rem;
+        font-size: 1.1rem;
+        font-weight: bold;
     }
-    
     .score-card h2 {
         color: #333;
         margin: 0;
+        font-size: 2.2rem;
+        font-family: 'Comic Sans MS', cursive, sans-serif;
     }
-    
     .correct-answer {
-        background-color: #d4edda;
+        background: linear-gradient(90deg, #B2FF59 0%, #00E676 100%);
         padding: 1.2rem;
-        border-radius: 8px;
-        border-left: 4px solid #28a745;
+        border-radius: 12px;
+        border-left: 6px solid #43A047;
         margin: 1rem 0;
+        box-shadow: 0 2px 8px #43A04755;
+        animation: tada 0.7s;
     }
-    
+    @keyframes tada {
+        0% { transform: scale(1);}
+        10%, 20% { transform: scale(0.9) rotate(-3deg);}
+        30%, 50%, 70%, 90% { transform: scale(1.1) rotate(3deg);}
+        40%, 60%, 80% { transform: scale(1.1) rotate(-3deg);}
+        100% { transform: scale(1);}
+    }
     .correct-answer h3 {
         color: #155724;
         margin-bottom: 0.5rem;
-        font-size: 1.3rem;
+        font-size: 1.5rem;
+        font-weight: bold;
+        letter-spacing: 1px;
     }
-    
     .correct-answer p {
         color: #155724;
         margin: 0.3rem 0;
+        font-size: 1.1rem;
     }
-    
     .wrong-answer {
-        background-color: #f8d7da;
+        background: linear-gradient(90deg, #FFCDD2 0%, #FF5252 100%);
         padding: 1.2rem;
-        border-radius: 8px;
-        border-left: 4px solid #dc3545;
+        border-radius: 12px;
+        border-left: 6px solid #B71C1C;
         margin: 1rem 0;
+        box-shadow: 0 2px 8px #B71C1C55;
+        animation: shake 0.5s;
     }
-    
+    @keyframes shake {
+        0% { transform: translateX(0);}
+        20% { transform: translateX(-8px);}
+        40% { transform: translateX(8px);}
+        60% { transform: translateX(-8px);}
+        80% { transform: translateX(8px);}
+        100% { transform: translateX(0);}
+    }
     .wrong-answer h3 {
         color: #721c24;
         margin-bottom: 0.5rem;
-        font-size: 1.3rem;
+        font-size: 1.5rem;
+        font-weight: bold;
+        letter-spacing: 1px;
     }
-    
     .wrong-answer p {
         color: #721c24;
         margin: 0.3rem 0;
+        font-size: 1.1rem;
     }
-    
     .question-card {
-        background-color: #ffffff;
-        border-radius: 10px;
+        background: linear-gradient(135deg, #E3F2FD 0%, #FFEB3B 100%);
+        border-radius: 16px;
         padding: 1.5rem;
-        border: 1px solid #ddd;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border: 2px solid #FF9800;
+        box-shadow: 0 2px 12px #FF980055;
         margin-bottom: 1.5rem;
+        animation: fadeIn 0.7s;
+        position: relative;
     }
-    
+    @keyframes fadeIn {
+        from { opacity: 0;}
+        to { opacity: 1;}
+    }
     .question-card h3 {
-        color: #0066CC;
+        color: #FF9800;
         margin-bottom: 0.8rem;
-        font-size: 1.5rem;
+        font-size: 1.7rem;
+        font-family: 'Comic Sans MS', cursive, sans-serif;
+        text-shadow: 1px 1px 6px #FFD700;
     }
-    
     .question-card p {
         color: #333;
         margin: 0.3rem 0;
+        font-size: 1.1rem;
     }
-    
+    .question-number {
+        position: absolute;
+        top: -25px;
+        right: 25px;
+        background: #FF9800;
+        color: #fff;
+        font-size: 1.3rem;
+        font-weight: bold;
+        padding: 0.5rem 1.2rem;
+        border-radius: 50px;
+        box-shadow: 0 2px 8px #FFD70055;
+        border: 2px solid #FFD700;
+        z-index: 2;
+    }
     .info-text {
         color: #666;
-        font-size: 0.9rem;
+        font-size: 1rem;
+        font-style: italic;
+    }
+    .fun-emoji {
+        font-size: 2.2rem;
+        text-align: center;
+        margin-bottom: 0.5rem;
+        animation: bounce 1.2s infinite alternate;
+    }
+    .option-btn {
+        font-size: 1.1rem !important;
+        font-weight: bold !important;
+        background: linear-gradient(90deg, #FFEB3B 0%, #FF9800 100%) !important;
+        color: #333 !important;
+        border-radius: 10px !important;
+        margin-bottom: 10px !important;
+        border: 2px solid #FFD700 !important;
+        box-shadow: 0 2px 8px #FFD70033 !important;
+        transition: transform 0.1s;
+    }
+    .option-btn:hover {
+        transform: scale(1.05);
+        background: linear-gradient(90deg, #FFD700 0%, #FF9800 100%) !important;
+        color: #fff !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -260,9 +339,10 @@ if df is None or len(df) == 0:
     st.error("❌ Impossible de charger les données olympiques. Vérifiez que le fichier medals_enriched.csv existe.")
     st.stop()
 
-# Titre principal
-st.markdown('<p class="main-title">🏅 Jeu de Prédiction des Médailles</p>', unsafe_allow_html=True)
-st.markdown('<p class="subtitle">Testez vos connaissances sur les médaillés des Jeux Olympiques de Paris 2024</p>', unsafe_allow_html=True)
+# Titre principal fun
+st.markdown('<div class="fun-emoji">🎉🤩🏅</div>', unsafe_allow_html=True)
+st.markdown('<p class="main-title">🏅 Olympic Medal Quiz Party!</p>', unsafe_allow_html=True)
+st.markdown('<p class="subtitle">Testez vos connaissances et amusez-vous avec les médaillés des Jeux Olympiques de Paris 2024 🎈</p>', unsafe_allow_html=True)
 st.markdown("---")
 
 # ============================================================================
@@ -320,7 +400,7 @@ with st.sidebar:
 # QUIZ GAME
 # ============================================================================
 
-st.markdown("## 🎯 Quiz")
+st.markdown("## 🎯 Quiz Olympique Fun")
 
 # Générer ou récupérer la question actuelle
 if st.session_state.current_question is None:
@@ -329,53 +409,47 @@ if st.session_state.current_question is None:
 
 if st.session_state.current_question:
     question = st.session_state.current_question
-    
-    # Afficher la question dans une carte
+
+    # Ajout d'un emoji sport aléatoire pour le fun
+    sport_emojis = ["🏊", "🏃", "🤸", "🏋️", "🚴", "🤾", "🏌️", "🏓", "🏸", "🏒", "🏀", "⚽", "🏈", "🥊", "🥋", "⛷️", "🏂", "🏄", "🚣", "🤽", "🏇", "🏹", "🧗"]
+    sport_emoji = random.choice(sport_emojis)
+
+    # Afficher la question dans une carte avec le numéro de question intégré
     st.markdown(f"""
     <div class="question-card">
-        <h3>🏅 {question['sport']}</h3>
+        <div class="question-number">Q{st.session_state.total_questions + 1}</div>
+        <h3>{sport_emoji} {question['sport']}</h3>
         <p><strong>Épreuve:</strong> {question['event']}</p>
         <p class="info-text">Genre: {question['gender']} • Date: {question['medal_date']}</p>
     </div>
     """, unsafe_allow_html=True)
-    
-    col1, col2 = st.columns([3, 1])
-    
-    with col2:
-        st.markdown(f"""
-        <div class="score-card">
-            <h4>QUESTION</h4>
-            <h2>{st.session_state.total_questions + 1}</h2>
-        </div>
-        """, unsafe_allow_html=True)
-    
+
     # Options de réponse
+    st.markdown("#### Quel pays a remporté la médaille d'or ?")
+    # Adapter le nombre de colonnes selon la difficulté
+    if len(question['options']) <= 3:
+        cols = st.columns(3)
+    elif len(question['options']) <= 4:
+        cols = st.columns(2)
+    else:
+        cols = st.columns(3)
+
     if not st.session_state.answered:
-        st.markdown("#### Quel pays a remporté la médaille d'or ?")
-        
-        # Adapter le nombre de colonnes selon la difficulté
-        if len(question['options']) <= 3:
-            cols = st.columns(3)
-        elif len(question['options']) <= 4:
-            cols = st.columns(2)
-        else:
-            cols = st.columns(3)
-        
         for idx, option in enumerate(question['options']):
             with cols[idx % len(cols)]:
                 if st.button(
-                    f"🌍 {option}", 
-                    key=f"option_{idx}", 
+                    f"🌍 {option}",
+                    key=f"option_{idx}",
                     use_container_width=True
                 ):
                     st.session_state.answered = True
                     st.session_state.total_questions += 1
-                    
+
                     is_correct = (option == question['correct_answer'])
-                    
+
                     if is_correct:
                         st.session_state.score += 1
-                    
+
                     # Enregistrer dans l'historique
                     st.session_state.history.append({
                         'sport': question['sport'],
@@ -388,11 +462,11 @@ if st.session_state.current_question:
                         'difficulty': st.session_state.difficulty
                     })
                     st.rerun()
-    
+
     # Afficher le résultat
     if st.session_state.answered and len(st.session_state.history) > 0:
         last_answer = st.session_state.history[-1]
-        
+
         if last_answer['correct']:
             st.markdown(f"""
             <div class="correct-answer">
@@ -402,7 +476,6 @@ if st.session_state.current_question:
                 <p><strong>Date:</strong> {question['medal_date']}</p>
             </div>
             """, unsafe_allow_html=True)
-            
             st.balloons()
         else:
             st.markdown(f"""
@@ -414,14 +487,19 @@ if st.session_state.current_question:
                 <p><strong>Date:</strong> {question['medal_date']}</p>
             </div>
             """, unsafe_allow_html=True)
-        
-        # Bouton pour question suivante
-        col1, col2, col3 = st.columns([1, 2, 1])
-        with col2:
-            if st.button("➡️ Question suivante", use_container_width=True):
-                st.session_state.current_question = get_new_question(df, st.session_state.difficulty)
-                st.session_state.answered = False
-                st.rerun()
+
+        # Bouton pour question suivante, centré
+        st.markdown("""
+        <div style='text-align:center; margin-top:20px;'>
+            <form>
+                <button style='font-size:1.2rem; background:linear-gradient(90deg,#FFEB3B,#FF9800);color:#333;border-radius:10px;padding:0.7rem 2rem;border:2px solid #FFD700;box-shadow:0 2px 8px #FFD70033;cursor:pointer;' type='submit'>➡️ Question suivante</button>
+            </form>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("➡️ Question suivante", use_container_width=True):
+            st.session_state.current_question = get_new_question(df, st.session_state.difficulty)
+            st.session_state.answered = False
+            st.rerun()
 
 # ============================================================================
 # FOOTER
