@@ -7,5 +7,5 @@ seaborn
 scikit-learn
 pyyaml
 requests
-pandas-profiling
+ydata-profiling
 openpyxl
