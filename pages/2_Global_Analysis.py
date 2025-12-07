@@ -461,25 +461,48 @@ fig_map = px.choropleth(
         'Bronze Medal': True,
         'filtered_total': True
     },
-    color_continuous_scale='YlOrRd',
+    color_continuous_scale=[
+        [0, '#f7fbff'],      # Bleu très clair
+        [0.2, '#deebf7'],
+        [0.4, '#9ecae1'],
+        [0.6, '#4292c6'],
+        [0.8, '#2171b5'],
+        [1, '#08519c']       # Bleu foncé
+    ],
     labels={
-        'filtered_total': 'Total Medals',
-        'country_code': 'NOC Code'
+        'filtered_total': '🏆 Total Medals',
+        'country_code': '🌍 NOC Code'
     },
     title='',
     range_color=[0, medals_for_map_display['filtered_total'].max()] if len(medals_for_map_display) > 0 else [0, 1]
 )
 
 fig_map.update_layout(
-    height=500,
+    height=550,
     geo=dict(
-        showframe=False,
+        showframe=True,
+        framecolor='rgba(102, 126, 234, 0.5)',
+        framewidth=2,
         showcoastlines=True,
+        coastlinecolor='rgba(50, 50, 50, 0.3)',
+        coastlinewidth=1.5,
         projection_type='natural earth',
         showcountries=True,
-        countrycolor='lightgray'
+        countrycolor='rgba(200, 200, 200, 0.3)',
+        showland=True,
+        landcolor='rgb(250, 250, 250)',
+        showlakes=True,
+        lakecolor='rgb(230, 240, 255)',
+        showocean=True,
+        oceancolor='rgb(220, 235, 255)',
     ),
-    margin=dict(l=0, r=0, t=0, b=0)
+    margin=dict(l=0, r=0, t=10, b=0),
+    coloraxis_colorbar=dict(
+        title="<b>Medals</b>",
+        thickness=15,
+        len=0.7,
+        tickfont=dict(size=11)
+    )
 )
 
 st.plotly_chart(fig_map, use_container_width=True)
