@@ -142,8 +142,8 @@ st.markdown("---")
 st.header("🌍 World Medal Map")
 st.markdown("**Choropleth map showing total medal count by country**")
 
-# Prepare data for world map
-medals_for_map = apply_filters(data['medals_total'], filter_continent=False, filter_country=False)
+# CORRECTION: Appliquer TOUS les filtres (continent ET country)
+medals_for_map = apply_filters(data['medals_total'], filter_continent=True, filter_country=True)
 
 # Calculate filtered total based on selected medal types
 if selected_medal_type:
@@ -430,9 +430,25 @@ medals_for_map_valid = medals_for_map[
     (medals_for_map['filtered_total'] > 0)
 ].copy()
 
+# AMÉLIORATION: Pour une meilleure visualisation, créer un DataFrame complet avec tous les pays
+# mais mettre 0 pour les pays non sélectionnés
+if selected_country != 'All' or selected_continent != 'All':
+    # Créer un DataFrame avec tous les pays (pour afficher la carte complète)
+    all_countries = data['medals_total'].copy()
+    all_countries['iso_code'] = all_countries['country_code'].map(lambda x: iso_mapping.get(x, x))
+    all_countries['filtered_total'] = 0  # Mettre 0 par défaut
+    
+    # Mettre les vraies valeurs uniquement pour les pays filtrés
+    for idx, row in medals_for_map_valid.iterrows():
+        all_countries.loc[all_countries['country_code'] == row['country_code'], 'filtered_total'] = row['filtered_total']
+    
+    medals_for_map_display = all_countries[all_countries['iso_code'].notna()].copy()
+else:
+    medals_for_map_display = medals_for_map_valid
+
 # Créer la carte choropleth
 fig_map = px.choropleth(
-    medals_for_map_valid,
+    medals_for_map_display,
     locations='iso_code',
     locationmode='ISO-3',
     color='filtered_total',
@@ -450,7 +466,8 @@ fig_map = px.choropleth(
         'filtered_total': 'Total Medals',
         'country_code': 'NOC Code'
     },
-    title=''
+    title='',
+    range_color=[0, medals_for_map_display['filtered_total'].max()] if len(medals_for_map_display) > 0 else [0, 1]
 )
 
 fig_map.update_layout(
@@ -474,22 +491,28 @@ with col1:
     countries_on_map = len(medals_for_map_valid)
     total_countries = len(medals_for_map[medals_for_map['filtered_total'] > 0])
     st.metric(
-        "Countries on Map", 
+        "Countries Selected", 
         countries_on_map,
-        delta=f"{total_countries - countries_on_map} not shown" if total_countries > countries_on_map else None
+        help="Number of countries matching the current filters"
     )
 
 with col2:
-    st.metric("Total Medals Awarded", int(medals_for_map['filtered_total'].sum()))
+    st.metric("Total Medals", int(medals_for_map['filtered_total'].sum()))
 
 with col3:
-    top_country = medals_for_map.nlargest(1, 'filtered_total')
-    if not top_country.empty:
-        st.metric("Leading Country", top_country['country'].values[0])
+    if len(medals_for_map_valid) > 0:
+        top_country = medals_for_map_valid.nlargest(1, 'filtered_total')
+        if not top_country.empty:
+            st.metric("Leading Country", top_country['country'].values[0])
+    else:
+        st.metric("Leading Country", "N/A")
 
 with col4:
-    avg_medals = medals_for_map[medals_for_map['filtered_total'] > 0]['filtered_total'].mean()
-    st.metric("Avg Medals/Country", f"{avg_medals:.1f}")
+    if len(medals_for_map_valid) > 0:
+        avg_medals = medals_for_map_valid['filtered_total'].mean()
+        st.metric("Avg Medals", f"{avg_medals:.1f}")
+    else:
+        st.metric("Avg Medals", "0")
 
 # Afficher les pays exclus de la carte (pour debug/info)
 if total_countries > countries_on_map:
@@ -503,7 +526,9 @@ if total_countries > countries_on_map:
             st.warning(f"⚠️ {len(excluded)} country/countries have medals but cannot be displayed on the map due to special NOC codes:")
             st.dataframe(excluded, use_container_width=True, hide_index=True)
         else:
-            st.info("All countries with medals are displayed on the map.")
+            st.info("All selected countries are displayed on the map.")
+
+st.markdown("---")
 
 # ============================================================================
 # SECTION 2: MEDAL HIERARCHY BY CONTINENT

@@ -116,7 +116,5 @@ if img_base64:
 else:
     st.warning("L'image de fond n'a pas pu être chargée. Vérifiez le chemin et le nom du fichier.")
     
-# Pour que l'application s'affiche correctement sans le hack CSS ci-dessus
-# Il est souvent nécessaire d'ajouter un élément Streamlit standard, même vide,
-# après la balise markdown pour s'assurer que Streamlit génère son conteneur principal
+
 st.empty()

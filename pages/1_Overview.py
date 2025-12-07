@@ -297,23 +297,23 @@ st.markdown("## 📊 Key Performance Indicators")
 total_athletes = len(filtered_athletes)
 total_countries = filtered_medals_total['country_code'].nunique() if len(filtered_medals_total) > 0 else data['nocs']['code'].nunique()
 
-# FIX: Pour calculer le nombre de sports, on doit utiliser les données filtrées qui contiennent les pays
-# On utilise filtered_medals qui a été filtré par pays ET contient la colonne 'discipline' (sport)
-if len(filtered_medals) > 0:
-    # Utiliser les médailles filtrées pour compter les sports uniques
-    total_sports = filtered_medals['discipline'].nunique()
-elif len(filtered_athletes) > 0:
-    # Alternative: utiliser les athlètes filtrés
+# FIX: Pour calculer le nombre de sports, utiliser les ATHLÈTES filtrés
+# car ils contiennent les sports de participation (pas seulement les médailles)
+if len(filtered_athletes) > 0:
     # Extraire tous les sports uniques de la colonne disciplines
-    all_disciplines = []
+    all_disciplines = set()
     for disciplines_str in filtered_athletes['disciplines'].dropna():
         try:
+            # Nettoyer la string: "['Wrestling', 'Judo']" -> ['Wrestling', 'Judo']
             sports_list = disciplines_str.strip("[]").replace("'", "").replace('"', '').split(',')
-            sports_list = [s.strip() for s in sports_list]
-            all_disciplines.extend(sports_list)
+            sports_list = [s.strip() for s in sports_list if s.strip()]
+            all_disciplines.update(sports_list)
         except:
             pass
-    total_sports = len(set(all_disciplines))
+    total_sports = len(all_disciplines)
+elif len(filtered_events) > 0:
+    # Alternative: utiliser les événements filtrés
+    total_sports = filtered_events['sport'].nunique()
 else:
     # Si aucun filtre, utiliser toutes les données
     total_sports = data['events']['sport'].nunique()
@@ -358,7 +358,7 @@ with col3:
         label="🏃 Total Sports",
         value=f"{total_sports:,}",
         delta=None,
-        help="Total number of different sports"
+        help="Total number of different sports with participation (not only medals)"
     )
 
 with col4:
