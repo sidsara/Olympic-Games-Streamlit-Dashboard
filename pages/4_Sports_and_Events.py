@@ -453,6 +453,37 @@ else:
 st.markdown("---")
 
 # ============================================================================
+# SECTION 4: YOUTUBE SEARCH LINK FOR EVENTS
+# ============================================================================
+
+st.header("🔗 Find Event on YouTube")
+st.markdown("**Select an event and get a direct YouTube search link for it. The event list reacts to the sidebar filters.**")
+
+# Appliquer les filtres de la sidebar sur les événements
+filtered_events = apply_filters(data['events'])
+
+# Générer la liste des événements disponibles après filtres
+event_options = filtered_events['event'].dropna().unique()
+event_options_sorted = sorted(event_options)
+
+selected_event = st.selectbox(
+    "Select an event to search on YouTube:",
+    event_options_sorted,
+    key="youtube_event_select"
+)
+
+if selected_event:
+    # Générer le lien YouTube avec le nom de l'événement entre guillemets
+    search_query = f'"{selected_event}" olympics'
+    youtube_url = f"https://www.youtube.com/results?search_query={search_query.replace(' ', '+')}"
+    st.markdown(
+        f"[🔎 Search for **{selected_event}** on YouTube]({youtube_url})",
+        unsafe_allow_html=True
+    )
+
+st.markdown("---")
+
+# ============================================================================
 # BONUS: SPORT DEEP DIVE
 # ============================================================================
 
